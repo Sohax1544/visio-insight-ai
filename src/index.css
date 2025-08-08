@@ -53,6 +53,13 @@ All colors MUST be HSL.
     --sidebar-border: 220 13% 91%;
 
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Neon chart palette (HSL triples) */
+    --chart-neon-1: 172 100% 62%;
+    --chart-neon-2: 296 100% 67%;
+    --chart-neon-3: 48 100% 60%;
+    --chart-neon-4: 200 100% 62%;
+    --chart-neon-5: 96 100% 58%;
   }
 
   .dark {
