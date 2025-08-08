@@ -139,6 +139,9 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
   }
 
   if (chart === "scatter") {
+    if (numericCols.length === 0) {
+      return <div className="h-[420px] flex items-center justify-center text-sm text-muted-foreground">Scatter requires at least one numeric column.</div>;
+    }
     const xNum = numericCols[0];
     const yNum = numericCols[1] || numericCols[0];
     const data = {

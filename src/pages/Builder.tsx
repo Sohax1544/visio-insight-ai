@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import type { ChartKind, ParsedResult } from "@/types/data";
@@ -41,9 +41,22 @@ export default function Builder() {
   const [customHex, setCustomHex] = useState<string>("");
   const [opacity, setOpacity] = useState<number>(0.35);
 
+  useEffect(() => {
+    if (!state) {
+      navigate("/", { replace: true });
+    }
+  }, [state, navigate]);
+
   if (!state) {
-    navigate("/");
-    return null;
+    return (
+      <main className="min-h-screen bg-background">
+        <div className="container py-10">
+          <h1 className="mb-2 text-2xl font-semibold">No data loaded</h1>
+          <p className="mb-6 text-muted-foreground">Please go back and upload a CSV/XLSX file to start building charts.</p>
+          <Button variant="secondary" onClick={() => navigate("/")}>Go to Upload</Button>
+        </div>
+      </main>
+    );
   }
 
   const headers = state.table.headers;
@@ -118,6 +131,44 @@ export default function Builder() {
                   </select>
                 </div>
               )}
+
+              {/* Appearance */}
+              <div className="pt-2">
+                <label className="mb-1 block text-sm text-muted-foreground">Appearance</label>
+                <div className="mb-2 flex flex-wrap items-center gap-2">
+                  <button type="button" aria-label="Theme default" onClick={() => { setColorVar(undefined); setCustomHex(""); }}
+                    className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}>Theme</button>
+                  <button type="button" aria-label="Neon 1" onClick={() => { setColorVar("--chart-neon-1"); setCustomHex(""); }}
+                    className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-1" ? 'ring-2 ring-ring' : ''}`}
+                    style={{ backgroundColor: `hsl(var(--chart-neon-1))` }} />
+                  <button type="button" aria-label="Neon 2" onClick={() => { setColorVar("--chart-neon-2"); setCustomHex(""); }}
+                    className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-2" ? 'ring-2 ring-ring' : ''}`}
+                    style={{ backgroundColor: `hsl(var(--chart-neon-2))` }} />
+                  <button type="button" aria-label="Neon 3" onClick={() => { setColorVar("--chart-neon-3"); setCustomHex(""); }}
+                    className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-3" ? 'ring-2 ring-ring' : ''}`}
+                    style={{ backgroundColor: `hsl(var(--chart-neon-3))` }} />
+                  <button type="button" aria-label="Neon 4" onClick={() => { setColorVar("--chart-neon-4"); setCustomHex(""); }}
+                    className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-4" ? 'ring-2 ring-ring' : ''}`}
+                    style={{ backgroundColor: `hsl(var(--chart-neon-4))` }} />
+                  <button type="button" aria-label="Neon 5" onClick={() => { setColorVar("--chart-neon-5"); setCustomHex(""); }}
+                    className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-5" ? 'ring-2 ring-ring' : ''}`}
+                    style={{ backgroundColor: `hsl(var(--chart-neon-5))` }} />
+                </div>
+                <div className="mb-2 flex items-center gap-2">
+                  <Input placeholder="#22c55e" value={customHex} onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }} />
+                  {customHex && (
+                    <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>
+                  )}
+                </div>
+                <div>
+                  <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>Opacity</span>
+                    <span>{Math.round((opacity ?? 0.35) * 100)}%</span>
+                  </div>
+                  <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={(v) => setOpacity(v[0] ?? 0.35)} />
+                </div>
+              </div>
+
               <div className="pt-4">
                 <Button variant="secondary" className="w-full" onClick={() => navigate("/")}>Back</Button>
               </div>
