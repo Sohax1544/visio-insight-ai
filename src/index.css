@@ -60,6 +60,14 @@ All colors MUST be HSL.
     --chart-neon-3: 48 100% 60%;
     --chart-neon-4: 200 100% 62%;
     --chart-neon-5: 96 100% 58%;
+
+    /* Colorful palette */
+    --chart-color-1: 10 90% 60%;
+    --chart-color-2: 35 90% 55%;
+    --chart-color-3: 200 90% 60%;
+    --chart-color-4: 260 90% 65%;
+    --chart-color-5: 145 70% 50%;
+    --chart-color-6: 325 85% 62%;
   }
 
   .dark {

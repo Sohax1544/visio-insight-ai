@@ -40,6 +40,7 @@ function hslVar(name: string, alpha?: number, fallback?: string) {
   }
 }
 const neonVars = ["--chart-neon-1","--chart-neon-2","--chart-neon-3","--chart-neon-4","--chart-neon-5"] as const;
+const colorfulVars = ["--chart-color-1","--chart-color-2","--chart-color-3","--chart-color-4","--chart-color-5","--chart-color-6"] as const;
 
 export interface ChartRendererProps {
   table: DataTable;
@@ -50,6 +51,8 @@ export interface ChartRendererProps {
   colorVar?: string; // CSS var like --chart-neon-3
   customHex?: string; // e.g., #22c55e
   opacity?: number; // 0.1 - 1
+  palette?: 'neon' | 'colorful' | 'monochrome';
+  perValueColors?: Record<string, string>; // label -> hex
 }
 
 function hexToRgba(hex: string, alpha: number = 1) {
@@ -68,7 +71,7 @@ function extractCategoricalColumns(table: DataTable) {
   return table.headers.filter((h) => table.rows.some((r) => typeof r[h] === "string"));
 }
 
-export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xField, yField, y2Field, colorVar, customHex, opacity }) => {
+export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xField, yField, y2Field, colorVar, customHex, opacity, palette = 'neon', perValueColors }) => {
   const chartRef = useRef<any>(null);
 
   const numericCols = useMemo(() => extractNumericColumns(table), [table]);
@@ -85,6 +88,19 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
     if (customHex) return hexToRgba(customHex, a);
     if (colorVar) return hslVar(colorVar, a);
     return hslVar(fallbackVar, a);
+  };
+  const colorFor = (index: number, label: string | number, a: number) => {
+    const key = String(label);
+    if (perValueColors && perValueColors[key]) return hexToRgba(perValueColors[key], a);
+    if (customHex) return hexToRgba(customHex, a);
+    if (colorVar) return hslVar(colorVar, a);
+    if (palette === 'colorful') return hslVar(colorfulVars[index % colorfulVars.length], a);
+    if (palette === 'monochrome') {
+      // vary only by alpha for subtle depth
+      const scale = 0.6 + (index % 6) * 0.07; // 0.6 - 1.0
+      return hslVar('--primary', Math.max(0.05, Math.min(1, a * scale)));
+    }
+    return hslVar(neonVars[index % neonVars.length], a);
   };
 
   const commonOptions: any = {
@@ -107,12 +123,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: values,
-          backgroundColor: labels.map((_, i) => {
-            const step = 0.9 - (i % 5) * 0.08;
-            // Use chosen color if provided; otherwise cycle neon palette
-            if (customHex || colorVar) return fromUser(neonVars[i % 5], step);
-            return hslVar(neonVars[i % 5], 0.85);
-          }),
+          backgroundColor: labels.map((lbl, i) => colorFor(i, lbl, 0.85)),
           borderColor: hslVar("--foreground", 0.15),
         },
       ],
@@ -132,6 +143,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           tension: 0.35,
           fill: true,
           pointRadius: 4,
+          pointBackgroundColor: labels.map((lbl, i) => colorFor(i, lbl, Math.min(0.9, alphaBase + 0.2))),
+          pointBorderColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
         },
       ],
     };
@@ -151,7 +164,9 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           data: table.rows
             .filter((r) => typeof r[xNum] === "number" && typeof r[yNum] === "number")
             .map((r) => ({ x: r[xNum] as number, y: r[yNum] as number })),
-          backgroundColor: fromUser("--chart-neon-2", Math.max(0.2, alphaBase)),
+          backgroundColor: table.rows
+            .filter((r) => typeof r[xNum] === "number" && typeof r[yNum] === "number")
+            .map((r, i) => colorFor(i, (r[x] ?? `Row ${i + 1}`) as any, Math.max(0.2, alphaBase))),
         },
       ],
     } as any;
@@ -208,8 +223,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           type: "bar" as const,
           label: y,
           data: values,
-          backgroundColor: fromUser("--chart-neon-4", alphaBase),
-          borderColor: fromUser("--chart-neon-4", 1),
+           backgroundColor: labels.map((lbl, i) => colorFor(i, lbl, alphaBase)),
+           borderColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
         },
         y2 && {
           type: "line" as const,
@@ -236,7 +251,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: sorted.map((s) => s.value),
-          backgroundColor: sorted.map((_, i) => fromUser("--chart-neon-5", Math.max(0.05, Math.min(1, (0.75 - i * 0.05) * (opacity ?? 1))))),
+          backgroundColor: sorted.map((s, i) => colorFor(i, s.label, Math.max(0.05, Math.min(1, (0.75 - i * 0.05) * (opacity ?? 1))))),
           borderRadius: 16,
           barThickness: (ctx: any) => {
             const max = Math.max(...sorted.map((s) => s.value)) || 1;
@@ -260,8 +275,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
       {
         label: y,
         data: values,
-        backgroundColor: isBar ? fromUser("--chart-neon-4", alphaBase) : fromUser("--chart-neon-3", alphaBase),
-        borderColor: isBar ? fromUser("--chart-neon-4", 1) : fromUser("--chart-neon-3", 1),
+        backgroundColor: labels.map((lbl, i) => colorFor(i, lbl, alphaBase)),
+        borderColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
       },
     ],
   };
