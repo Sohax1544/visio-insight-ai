@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { Copy, Download, Share2 } from "lucide-react";
 
 const chartTypes: { value: ChartKind; label: string }[] = [
@@ -36,6 +37,9 @@ export default function Builder() {
   const [xField, setXField] = useState<string | undefined>(undefined);
   const [yField, setYField] = useState<string | undefined>(undefined);
   const [y2Field, setY2Field] = useState<string | undefined>(undefined);
+  const [colorVar, setColorVar] = useState<string | undefined>(undefined);
+  const [customHex, setCustomHex] = useState<string>("");
+  const [opacity, setOpacity] = useState<number>(0.35);
 
   if (!state) {
     navigate("/");
@@ -153,7 +157,8 @@ export default function Builder() {
                 </div>
               ) : (
                 <div className="h-[460px]">
-                  <ChartRenderer table={state.table} chart={chart} xField={xField} yField={yField} y2Field={y2Field} />
+                  <ChartRenderer table={state.table} chart={chart} xField={xField} yField={yField} y2Field={y2Field}
+                    colorVar={colorVar} customHex={customHex} opacity={opacity} />
                 </div>
               )}
             </CardContent>

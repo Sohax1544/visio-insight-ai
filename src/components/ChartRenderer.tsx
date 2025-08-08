@@ -275,11 +275,3 @@ export function downloadChartPng(canvasId: string) {
 }
 
 
-export function downloadChartPng(canvasId: string) {
-  const canvas = document.getElementById(canvasId) as HTMLCanvasElement | null;
-  if (!canvas) return;
-  const a = document.createElement("a");
-  a.href = canvas.toDataURL("image/png", 1.0);
-  a.download = `chart-${Date.now()}.png`;
-  a.click();
-}
