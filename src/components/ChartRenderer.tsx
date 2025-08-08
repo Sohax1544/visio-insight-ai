@@ -29,6 +29,18 @@ ChartJS.register(
   MatrixElement
 );
 
+// CSS HSL variable helper for canvas colors
+function hslVar(name: string, alpha?: number, fallback?: string) {
+  try {
+    const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if (!v) return fallback || "#00e5ff";
+    return `hsl(${v}${alpha !== undefined ? ` / ${alpha}` : ""})`;
+  } catch {
+    return fallback || "#00e5ff";
+  }
+}
+const neonVars = ["--chart-neon-1","--chart-neon-2","--chart-neon-3","--chart-neon-4","--chart-neon-5"] as const;
+
 export interface ChartRendererProps {
   table: DataTable;
   chart: ChartKind;
@@ -65,8 +77,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
       title: { display: false },
     },
     scales: {
-      x: { grid: { color: "hsl(var(--muted-foreground) / 0.2)" }, ticks: { color: "hsl(var(--foreground) / 0.9)" } },
-      y: { grid: { color: "hsl(var(--muted-foreground) / 0.2)" }, ticks: { color: "hsl(var(--foreground) / 0.9)" } },
+      x: { grid: { color: hslVar("--muted-foreground", 0.2) }, ticks: { color: hslVar("--foreground", 0.9) } },
+      y: { grid: { color: hslVar("--muted-foreground", 0.2) }, ticks: { color: hslVar("--foreground", 0.9) } },
     },
   };
 
@@ -77,8 +89,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: values,
-          backgroundColor: labels.map((_, i) => `hsl(var(${["--chart-neon-1","--chart-neon-2","--chart-neon-3","--chart-neon-4","--chart-neon-5"][i % 5]}) / 0.85)`),
-          borderColor: "hsl(var(--foreground) / 0.15)",
+          backgroundColor: labels.map((_, i) => hslVar(neonVars[i % 5], 0.85)),
+          borderColor: hslVar("--foreground", 0.15),
         },
       ],
     };
@@ -92,8 +104,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: values,
-          borderColor: "hsl(var(--chart-neon-1))",
-          backgroundColor: "hsl(var(--chart-neon-1) / 0.25)",
+          borderColor: hslVar("--chart-neon-1"),
+          backgroundColor: hslVar("--chart-neon-1", 0.25),
           tension: 0.35,
           fill: true,
           pointRadius: 4,
@@ -113,7 +125,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           data: table.rows
             .filter((r) => typeof r[xNum] === "number" && typeof r[yNum] === "number")
             .map((r) => ({ x: r[xNum] as number, y: r[yNum] as number })),
-          backgroundColor: "hsl(var(--chart-neon-2) / 0.7)",
+          backgroundColor: hslVar("--chart-neon-2", 0.7),
         },
       ],
     } as any;
@@ -137,12 +149,12 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           backgroundColor: (ctx: any) => {
             const v = ctx.raw?.v ?? 0;
             const alpha = Math.max(0.05, Math.min(1, v / (Math.max(...values) || 1)));
-            return `hsl(var(--chart-neon-3) / ${alpha})`;
+            return hslVar("--chart-neon-3", alpha);
           },
           width: ({ chart }: any) => (chart.chartArea?.width || 1) / xCats.length - 2,
           height: ({ chart }: any) => (chart.chartArea?.height || 1) / yCats.length - 2,
           borderWidth: 1,
-          borderColor: "hsl(var(--border))",
+          borderColor: hslVar("--border"),
         } as any,
       ],
     } as any;
@@ -150,8 +162,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
     const options = {
       ...commonOptions,
       scales: {
-        x: { ticks: { color: "hsl(var(--foreground) / 0.9)" } },
-        y: { ticks: { color: "hsl(var(--foreground) / 0.9)" } },
+        x: { ticks: { color: hslVar("--foreground", 0.9) } },
+        y: { ticks: { color: hslVar("--foreground", 0.9) } },
       },
       plugins: { legend: { display: false } },
     } as any;
@@ -169,15 +181,15 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           type: "bar" as const,
           label: y,
           data: values,
-          backgroundColor: "hsl(var(--chart-neon-4) / 0.35)",
-          borderColor: "hsl(var(--chart-neon-4))",
+          backgroundColor: hslVar("--chart-neon-4", 0.35),
+          borderColor: hslVar("--chart-neon-4"),
         },
         y2 && {
           type: "line" as const,
           label: y2,
           data: table.rows.map((r) => (typeof r[y2] === "number" ? (r[y2] as number) : NaN)),
-          borderColor: "hsl(var(--chart-neon-1))",
-          backgroundColor: "hsl(var(--chart-neon-1) / 0.2)",
+          borderColor: hslVar("--chart-neon-1"),
+          backgroundColor: hslVar("--chart-neon-1", 0.2),
           tension: 0.35,
           yAxisID: "y",
         },
@@ -197,7 +209,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: sorted.map((s) => s.value),
-          backgroundColor: sorted.map((_, i) => `hsl(var(--chart-neon-5) / ${0.75 - i * 0.05})`),
+          backgroundColor: sorted.map((_, i) => hslVar("--chart-neon-5", 0.75 - i * 0.05)),
           borderRadius: 16,
           barThickness: (ctx: any) => {
             const max = Math.max(...sorted.map((s) => s.value)) || 1;
@@ -221,8 +233,8 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
       {
         label: y,
         data: values,
-        backgroundColor: isBar ? "hsl(var(--chart-neon-4) / 0.35)" : "hsl(var(--chart-neon-3) / 0.35)",
-        borderColor: isBar ? "hsl(var(--chart-neon-4))" : "hsl(var(--chart-neon-3))",
+        backgroundColor: isBar ? hslVar("--chart-neon-4", 0.35) : hslVar("--chart-neon-3", 0.35),
+        borderColor: isBar ? hslVar("--chart-neon-4") : hslVar("--chart-neon-3"),
       },
     ],
   };
