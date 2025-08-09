@@ -824,13 +824,13 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                                     ) : t.value === 'line' ? (
                                       <LineChart className="h-5 w-5" />
                                     ) : t.value === 'heatmap' ? (
-                                      <Grid3x3 className="h-5 w-5" />
+                                      <Grid3X3 className="h-5 w-5" />
                                     ) : t.value === 'table' ? (
                                       <TableIcon className="h-5 w-5" />
                                     ) : t.value === 'funnel' ? (
-                                      <Funnel className="h-5 w-5" />
+                                      <Filter className="h-5 w-5" />
                                     ) : t.value === 'scatter' ? (
-                                      <ScatterChart className="h-5 w-5" />
+                                      <CircleDot className="h-5 w-5" />
                                     ) : (
                                       <BarChart3 className="h-5 w-5" />
                                     )}
