@@ -9,9 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+
 import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { AIHelper } from "@/components/AIHelper";
@@ -46,7 +48,33 @@ export default function Builder() {
   const [customHex, setCustomHex] = useState<string>("");
   const [opacity, setOpacity] = useState<number>(0.35);
   const [palette, setPalette] = useState<'neon' | 'colorful' | 'monochrome'>("neon");
-  const [perValueColors, setPerValueColors] = useState<Record<string, string>>({});
+const [perValueColors, setPerValueColors] = useState<Record<string, string>>({});
+
+  // Size controls (UI only)
+  const [sizeW, setSizeW] = useState<number>(967);
+  const [sizeH, setSizeH] = useState<number>(663);
+
+  // Graph options (UI only)
+  const [donut, setDonut] = useState<boolean>(false);
+  const [legendPos, setLegendPos] = useState<'top' | 'right' | 'none'>('top');
+  const [headlinePos, setHeadlinePos] = useState<'none' | 'left' | 'center'>('none');
+  const [dataLabels, setDataLabels] = useState<boolean>(true);
+  const [showPercent, setShowPercent] = useState<boolean>(false);
+  const [categoryLabels, setCategoryLabels] = useState<boolean>(false);
+  const [abbrev, setAbbrev] = useState<'auto' | 'none' | 'short'>('auto');
+  const [decimalPlaces, setDecimalPlaces] = useState<'auto' | 'fixed'>('auto');
+
+  // Axes options (UI only)
+  const [xVisible, setXVisible] = useState<boolean>(true);
+  const [xPosition, setXPosition] = useState<'top' | 'bottom'>('bottom');
+  const [xEndAt, setXEndAt] = useState<'auto' | 'data' | 'max'>('auto');
+
+  // Color/style options (UI only)
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>('dark');
+  const [paletteTab, setPaletteTab] = useState<'preset' | 'brand' | 'freestyle'>('preset');
+  const [chartBorder, setChartBorder] = useState<'none' | 'gradient' | 'solid'>('gradient');
+  const [roundedCorners, setRoundedCorners] = useState<boolean>(true);
+  const [chartBg, setChartBg] = useState<'black' | 'grey' | 'tint' | 'custom' | 'none'>('tint');
 
   useEffect(() => {
     if (!state) {
@@ -195,134 +223,287 @@ export default function Builder() {
             <Card className="flex h-full w-full flex-col items-center justify-between rounded-xl p-2">
               <TooltipProvider>
                 <div className="flex h-full flex-col items-center gap-2">
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <Ruler className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Size</TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <BarChart3 className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Graph</TooltipContent>
-                  </Tooltip>
-
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <Ruler className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Axes</TooltipContent>
-                  </Tooltip>
-
-                  <Sheet>
+                  <Popover>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <SheetTrigger asChild>
+                        <PopoverTrigger asChild>
                           <Button variant="ghost" size="icon" className="rounded-lg">
-                            <Palette className="h-5 w-5" />
+                            <Ruler className="h-5 w-5" />
                           </Button>
-                        </SheetTrigger>
+                        </PopoverTrigger>
                       </TooltipTrigger>
-                      <TooltipContent>Color</TooltipContent>
+                      <TooltipContent>Size</TooltipContent>
                     </Tooltip>
-                    <SheetContent side="right" className="w-[420px]">
-                      <SheetHeader>
-                        <SheetTitle>Style & Colors</SheetTitle>
-                      </SheetHeader>
-                      <div className="space-y-3 overflow-auto p-1">
-                        <div>
-                          <label className="mb-1 block text-sm text-muted-foreground">Chart type</label>
-                          <Select value={chart} onValueChange={(v) => setChart(v as ChartKind)}>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select chart" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {chartTypes.map((t) => (
-                                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                    <PopoverContent side="left" align="center" className="w-80 p-4">
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium">Presets</div>
+                        <div className="grid gap-2">
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1920); setSizeH(1080); }}>
+                            <span>Google Slides / PowerPoint</span>
+                            <span className="text-xs text-muted-foreground">16:9</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1200); setSizeH(800); }}>
+                            <span>Web / email</span>
+                            <span className="text-xs text-muted-foreground">3:2</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1200); setSizeH(628); }}>
+                            <span>LinkedIn post</span>
+                            <span className="text-xs text-muted-foreground">1.91:1</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1080); }}>
+                            <span>Instagram post</span>
+                            <span className="text-xs text-muted-foreground">1:1</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1920); }}>
+                            <span>TikTok / Instagram story</span>
+                            <span className="text-xs text-muted-foreground">9:16</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1600); setSizeH(900); }}>
+                            <span>X (Twitter)</span>
+                            <span className="text-xs text-muted-foreground">16:9</span>
+                          </Button>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1920); }}>
+                            <span>Mobile</span>
+                            <span className="text-xs text-muted-foreground">9:16</span>
+                          </Button>
                         </div>
-                        <div>
-                          <label className="mb-1 block text-sm text-muted-foreground">X field</label>
-                          <select className="w-full rounded-md border border-input bg-background p-2" value={xField} onChange={(e) => setXField(e.target.value)}>
-                            <option value="">Auto</option>
-                            {headers.map((h) => (
-                              <option key={h} value={h}>{h}</option>
-                            ))}
-                          </select>
+                        <div className="text-sm font-medium pt-1">Custom size</div>
+                        <div className="flex items-center gap-2">
+                          <Input type="number" value={sizeW} onChange={(e) => setSizeW(parseInt(e.target.value || '0'))} />
+                          <span className="text-xs text-muted-foreground">px</span>
+                          <Input type="number" value={sizeH} onChange={(e) => setSizeH(parseInt(e.target.value || '0'))} />
+                          <span className="text-xs text-muted-foreground">px</span>
                         </div>
-                        <div>
-                          <label className="mb-1 block text-sm text-muted-foreground">Y field</label>
-                          <select className="w-full rounded-md border border-input bg-background p-2" value={yField} onChange={(e) => setYField(e.target.value)}>
-                            <option value="">Auto</option>
-                            {headers.map((h) => (
-                              <option key={h} value={h}>{h}</option>
-                            ))}
-                          </select>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <BarChart3 className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Graph</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-[380px] p-4">
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-2">
+                          {chartTypes.map((t) => (
+                            <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
+                              {t.label}
+                            </Button>
+                          ))}
                         </div>
-                        {chart === "combo" && (
+
+                        {chart === 'pie' && (
                           <div>
-                            <label className="mb-1 block text-sm text-muted-foreground">Y2 field (line)</label>
-                            <select className="w-full rounded-md border border-input bg-background p-2" value={y2Field} onChange={(e) => setY2Field(e.target.value)}>
-                              <option value="">Auto</option>
-                              {headers.map((h) => (
-                                <option key={h} value={h}>{h}</option>
-                              ))}
-                            </select>
+                            <div className="mb-2 text-sm font-medium">Pie chart appearance</div>
+                            <div className="flex gap-2">
+                              <Button size="sm" variant={!donut ? 'default':'secondary'} onClick={() => setDonut(false)}>Pie chart</Button>
+                              <Button size="sm" variant={donut ? 'default':'secondary'} onClick={() => setDonut(true)}>Donut chart</Button>
+                            </div>
                           </div>
                         )}
 
-                        {/* Palette options */}
-                        <div className="pt-2">
-                          <label className="mb-1 block text-sm text-muted-foreground">Palette</label>
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Legend</div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={legendPos==='top'?'default':'secondary'} onClick={()=>setLegendPos('top')}>Top</Button>
+                            <Button size="sm" variant={legendPos==='right'?'default':'secondary'} onClick={()=>setLegendPos('right')}>Right</Button>
+                            <Button size="sm" variant={legendPos==='none'?'default':'secondary'} onClick={()=>setLegendPos('none')}>None</Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Headline number</div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={headlinePos==='none'?'default':'secondary'} onClick={()=>setHeadlinePos('none')}>None</Button>
+                            <Button size="sm" variant={headlinePos==='left'?'default':'secondary'} onClick={()=>setHeadlinePos('left')}>Left</Button>
+                            <Button size="sm" variant={headlinePos==='center'?'default':'secondary'} onClick={()=>setHeadlinePos('center')}>Center</Button>
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Data labels</span>
+                            <Switch checked={dataLabels} onCheckedChange={setDataLabels} />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">% Show percentages</span>
+                            <Switch checked={showPercent} onCheckedChange={setShowPercent} />
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm">Category labels</span>
+                            <Switch checked={categoryLabels} onCheckedChange={setCategoryLabels} />
+                          </div>
+                        </div>
+
+                        <div className="grid gap-2">
+                          <div className="text-sm font-medium">Number format</div>
+                          <div className="flex items-center gap-2">
+                            <Select value={abbrev} onValueChange={(v)=>setAbbrev(v as typeof abbrev)}>
+                              <SelectTrigger className="w-32">
+                                <SelectValue placeholder="Auto" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="auto">Auto</SelectItem>
+                                <SelectItem value="none">None</SelectItem>
+                                <SelectItem value="short">Short</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <div className="ml-auto flex gap-2">
+                              <Button size="sm" variant={decimalPlaces==='auto'?'default':'secondary'} onClick={()=>setDecimalPlaces('auto')}>Auto</Button>
+                              <Button size="sm" variant={decimalPlaces==='fixed'?'default':'secondary'} onClick={()=>setDecimalPlaces('fixed')}>Fixed</Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <Ruler className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Axes</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-80 p-4">
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium">X-Axis</div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Visible</span>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={!xVisible ? 'default':'secondary'} onClick={()=>setXVisible(false)}>No</Button>
+                            <Button size="sm" variant={xVisible ? 'default':'secondary'} onClick={()=>setXVisible(true)}>Yes</Button>
+                          </div>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm">Position</span>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={xPosition==='top'?'default':'secondary'} onClick={()=>setXPosition('top')}>Top</Button>
+                            <Button size="sm" variant={xPosition==='bottom'?'default':'secondary'} onClick={()=>setXPosition('bottom')}>Bottom</Button>
+                          </div>
+                        </div>
+                        <div>
+                          <div className="mb-1 text-sm">End at</div>
+                          <Select value={xEndAt} onValueChange={(v)=>setXEndAt(v as typeof xEndAt)}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Auto" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="auto">Auto</SelectItem>
+                              <SelectItem value="data">Data</SelectItem>
+                              <SelectItem value="max">Max</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <Palette className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Color</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-[420px] p-4">
+                      <div className="space-y-4">
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Theme</div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={themeMode==='light'?'default':'secondary'} onClick={()=>setThemeMode('light')}>Light</Button>
+                            <Button size="sm" variant={themeMode==='dark'?'default':'secondary'} onClick={()=>setThemeMode('dark')}>Dark</Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Palette</div>
+                          <div className="mb-2 flex gap-2">
+                            <Button size="sm" variant={paletteTab==='preset'?'default':'secondary'} onClick={()=>setPaletteTab('preset')}>Preset</Button>
+                            <Button size="sm" variant={paletteTab==='brand'?'default':'secondary'} onClick={()=>setPaletteTab('brand')}>Brand kit</Button>
+                            <Button size="sm" variant={paletteTab==='freestyle'?'default':'secondary'} onClick={()=>setPaletteTab('freestyle')}>Freestyle</Button>
+                          </div>
                           <div className="mb-2 flex flex-wrap items-center gap-2">
                             <Button variant={palette==='monochrome'? 'default':'secondary'} size="sm" onClick={() => setPalette('monochrome')}>Monochrome</Button>
                             <Button variant={palette==='colorful'? 'default':'secondary'} size="sm" onClick={() => setPalette('colorful')}>Colorful</Button>
                             <Button variant={palette==='neon'? 'default':'secondary'} size="sm" onClick={() => setPalette('neon')}>Neon</Button>
                           </div>
 
-                          {/* Base color */}
-                          <label className="mb-1 block text-sm text-muted-foreground">Base color</label>
-                          <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <button type="button" aria-label="Theme default" onClick={() => { setColorVar(undefined); setCustomHex(""); }}
-                              className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}>Theme</button>
-                            <button type="button" aria-label="Neon 1" onClick={() => { setColorVar("--chart-neon-1"); setCustomHex(""); }}
-                              className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-1" ? 'ring-2 ring-ring' : ''}`}
-                              style={{ backgroundColor: `hsl(var(--chart-neon-1))` }} />
-                            <button type="button" aria-label="Neon 2" onClick={() => { setColorVar("--chart-neon-2"); setCustomHex(""); }}
-                              className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-2" ? 'ring-2 ring-ring' : ''}`}
-                              style={{ backgroundColor: `hsl(var(--chart-neon-2))` }} />
-                            <button type="button" aria-label="Neon 3" onClick={() => { setColorVar("--chart-neon-3"); setCustomHex(""); }}
-                              className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-3" ? 'ring-2 ring-ring' : ''}`}
-                              style={{ backgroundColor: `hsl(var(--chart-neon-3))` }} />
-                            <button type="button" aria-label="Neon 4" onClick={() => { setColorVar("--chart-neon-4"); setCustomHex(""); }}
-                              className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-4" ? 'ring-2 ring-ring' : ''}`}
-                              style={{ backgroundColor: `hsl(var(--chart-neon-4))` }} />
-                            <button type="button" aria-label="Neon 5" onClick={() => { setColorVar("--chart-neon-5"); setCustomHex(""); }}
-                              className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-5" ? 'ring-2 ring-ring' : ''}`}
-                              style={{ backgroundColor: `hsl(var(--chart-neon-5))` }} />
-                          </div>
-                          <div className="mb-2 flex items-center gap-2">
-                            <Input placeholder="#22c55e" value={customHex} onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }} />
-                            {customHex && (
-                              <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>
-                            )}
-                          </div>
                           <div>
-                            <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
-                              <span>Opacity</span>
-                              <span>{Math.round((opacity ?? 0.35) * 100)}%</span>
+                            <div className="mb-1 text-sm text-muted-foreground">Base color</div>
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <button type="button" aria-label="Theme default" onClick={() => { setColorVar(undefined); setCustomHex(""); }}
+                                className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}>Theme</button>
+                              <button type="button" aria-label="Neon 1" onClick={() => { setColorVar("--chart-neon-1"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-1" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-1))` }} />
+                              <button type="button" aria-label="Neon 2" onClick={() => { setColorVar("--chart-neon-2"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-2" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-2))` }} />
+                              <button type="button" aria-label="Neon 3" onClick={() => { setColorVar("--chart-neon-3"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-3" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-3))` }} />
+                              <button type="button" aria-label="Neon 4" onClick={() => { setColorVar("--chart-neon-4"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-4" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-4))` }} />
+                              <button type="button" aria-label="Neon 5" onClick={() => { setColorVar("--chart-neon-5"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-5" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-5))` }} />
                             </div>
-                            <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={(v) => setOpacity(v[0] ?? 0.35)} />
+                            <div className="mb-2 flex items-center gap-2">
+                              <Input placeholder="#22c55e" value={customHex} onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }} />
+                              {customHex && (
+                                <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>
+                              )}
+                            </div>
+                            <div>
+                              <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
+                                <span>Opacity</span>
+                                <span>{Math.round((opacity ?? 0.35) * 100)}%</span>
+                              </div>
+                              <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={(v) => setOpacity(v[0] ?? 0.35)} />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Chart border</div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={chartBorder==='none'?'default':'secondary'} onClick={()=>setChartBorder('none')}>None</Button>
+                            <Button size="sm" variant={chartBorder==='gradient'?'default':'secondary'} onClick={()=>setChartBorder('gradient')}>Gradient</Button>
+                            <Button size="sm" variant={chartBorder==='solid'?'default':'secondary'} onClick={()=>setChartBorder('solid')}>Solid</Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Corners</div>
+                          <div className="flex gap-2">
+                            <Button size="sm" variant={roundedCorners?'default':'secondary'} onClick={()=>setRoundedCorners(true)}>Rounded corners</Button>
+                            <Button size="sm" variant={!roundedCorners?'default':'secondary'} onClick={()=>setRoundedCorners(false)}>Sharp corners</Button>
+                          </div>
+                        </div>
+
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Chart background</div>
+                          <div className="flex flex-wrap gap-2">
+                            {(['black','grey','tint','custom','none'] as const).map((bg) => (
+                              <Button key={bg} size="sm" variant={chartBg===bg ? 'default':'secondary'} onClick={()=>setChartBg(bg)} className="capitalize">{bg}</Button>
+                            ))}
                           </div>
                         </div>
 
@@ -357,8 +538,8 @@ export default function Builder() {
                           </div>
                         </div>
                       </div>
-                    </SheetContent>
-                  </Sheet>
+                    </PopoverContent>
+                  </Popover>
 
                   <Tooltip>
                     <TooltipTrigger asChild>
