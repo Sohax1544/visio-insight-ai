@@ -738,7 +738,7 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                       </TooltipTrigger>
                       <TooltipContent>Edit data</TooltipContent>
                     </Tooltip>
-                    <DrawerContent className="h-[80vh] bg-sidebar text-sidebar-foreground">
+                    <DrawerContent className="h-[80vh] bg-sidebar text-sidebar-foreground flex flex-col">
                       <DrawerHeader className="flex items-center justify-between border-b border-sidebar-border">
                         <DrawerTitle className="text-lg">Edit data</DrawerTitle>
                         <div className="flex items-center gap-3">
@@ -748,7 +748,7 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                           </Button>
                         </div>
                       </DrawerHeader>
-                      <div className={`grid h-full grid-cols-1 gap-4 p-4 ${editPreviewCollapsed ? '' : 'md:grid-cols-[70%_30%]'}`}>
+                      <div className={`grid flex-1 min-h-0 gap-4 p-4 ${editPreviewCollapsed ? 'grid-cols-1' : 'grid-cols-[7fr_3fr]'}`}>
                         {/* Table area (left ~70%) */}
                         <div className="relative flex min-h-0 flex-col rounded-xl border border-sidebar-border bg-sidebar-accent">
                           <div className="min-w-full overflow-auto">
@@ -790,7 +790,7 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
 
                         {/* Preview panel (right ~30%) */}
                         {!editPreviewCollapsed && (
-                          <aside className="flex min-h-0 flex-col rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
+                          <aside className="flex min-h-0 flex-col overflow-y-auto rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
                             <div className="flex items-center justify-end">
                               <Button variant="ghost" size="sm" onClick={() => setEditPreviewCollapsed(true)}>Collapse</Button>
                             </div>
