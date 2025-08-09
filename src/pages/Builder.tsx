@@ -47,7 +47,7 @@ export default function Builder() {
   const [y2Field, setY2Field] = useState<string | undefined>(undefined);
   const [colorVar, setColorVar] = useState<string | undefined>(undefined);
   const [customHex, setCustomHex] = useState<string>("");
-  const [opacity, setOpacity] = useState<number>(0.35);
+  const [opacity, setOpacity] = useState<number>(1);
   const [palette, setPalette] = useState<'neon' | 'colorful' | 'monochrome'>("neon");
 const [perValueColors, setPerValueColors] = useState<Record<string, string>>({});
 
@@ -543,7 +543,7 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                                 <span>Opacity</span>
                                 <span>{Math.round((opacity ?? 0.35) * 100)}%</span>
                               </div>
-                              <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={(v) => setOpacity(v[0] ?? 0.35)} />
+                              <Slider value={[1]} min={1} max={1} step={1} disabled />
                             </div>
                           </div>
                         </div>

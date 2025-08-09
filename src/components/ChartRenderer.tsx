@@ -83,7 +83,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
   const labels = table.rows.map((r, i) => (r[x] ?? `Row ${i + 1}`) as any);
   const values = table.rows.map((r) => (typeof r[y] === "number" ? (r[y] as number) : NaN));
 
-  const alphaBase = Math.max(0.05, Math.min(1, opacity ?? 0.35));
+  const alphaBase = 1; // lock to 100% opacity
   const fromUser = (fallbackVar: string, a: number) => {
     if (customHex) return hexToRgba(customHex, a);
     if (colorVar) return hslVar(colorVar, a);
@@ -107,12 +107,12 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { display: chart !== "table" },
+      legend: { display: chart !== "table", labels: { color: hslVar("--foreground") } },
       title: { display: false },
     },
     scales: {
-      x: { grid: { color: hslVar("--muted-foreground", 0.2) }, ticks: { color: hslVar("--foreground", 0.9) } },
-      y: { grid: { color: hslVar("--muted-foreground", 0.2) }, ticks: { color: hslVar("--foreground", 0.9) } },
+      x: { grid: { color: hslVar("--foreground", 0.16) }, ticks: { color: hslVar("--foreground") } },
+      y: { grid: { color: hslVar("--foreground", 0.16) }, ticks: { color: hslVar("--foreground") } },
     },
   };
 
@@ -123,7 +123,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: values,
-          backgroundColor: labels.map((lbl, i) => colorFor(i, lbl, 0.85)),
+          backgroundColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
           borderColor: hslVar("--foreground", 0.15),
         },
       ],
@@ -139,11 +139,11 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           label: y,
           data: values,
           borderColor: fromUser("--chart-neon-1", 1),
-          backgroundColor: fromUser("--chart-neon-1", Math.min(0.6, alphaBase)),
+          backgroundColor: fromUser("--chart-neon-1", 1),
           tension: 0.35,
           fill: true,
           pointRadius: 4,
-          pointBackgroundColor: labels.map((lbl, i) => colorFor(i, lbl, Math.min(0.9, alphaBase + 0.2))),
+          pointBackgroundColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
           pointBorderColor: labels.map((lbl, i) => colorFor(i, lbl, 1)),
         },
       ],
@@ -187,12 +187,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           data: yCats.flatMap((yc, yi) =>
             xCats.map((xc, xi) => ({ x: xi, y: yi, v: (table.rows.find((r) => r[catCols[0]] === xc && (!catCols[1] || r[catCols[1]] === yc))?.[valueCol] as number) || 0 }))
           ),
-          backgroundColor: (ctx: any) => {
-            const v = ctx.raw?.v ?? 0;
-            const base = Math.max(0.05, Math.min(1, v / (Math.max(...values) || 1)));
-            const a = Math.max(0.05, Math.min(1, base * (opacity ?? 1)));
-            return fromUser("--chart-neon-3", a);
-          },
+          backgroundColor: (ctx: any) => fromUser("--chart-neon-3", 1),
           width: ({ chart }: any) => (chart.chartArea?.width || 1) / xCats.length - 2,
           height: ({ chart }: any) => (chart.chartArea?.height || 1) / yCats.length - 2,
           borderWidth: 1,
@@ -231,7 +226,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
           label: y2,
           data: table.rows.map((r) => (typeof r[y2] === "number" ? (r[y2] as number) : NaN)),
           borderColor: hslVar("--chart-neon-1"),
-          backgroundColor: hslVar("--chart-neon-1", Math.min(0.4, alphaBase)),
+          backgroundColor: hslVar("--chart-neon-1", 1),
           tension: 0.35,
           yAxisID: "y",
         },
@@ -251,7 +246,7 @@ export const ChartRenderer: React.FC<ChartRendererProps> = ({ table, chart, xFie
         {
           label: y,
           data: sorted.map((s) => s.value),
-          backgroundColor: sorted.map((s, i) => colorFor(i, s.label, Math.max(0.05, Math.min(1, (0.75 - i * 0.05) * (opacity ?? 1))))),
+          backgroundColor: sorted.map((s, i) => colorFor(i, s.label, 1)),
           borderRadius: 16,
           barThickness: (ctx: any) => {
             const max = Math.max(...sorted.map((s) => s.value)) || 1;
