@@ -91,7 +91,9 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
   const [goalOn, setGoalOn] = useState<boolean>(false);
   const [trendOn, setTrendOn] = useState<boolean>(false);
   const [averageOn, setAverageOn] = useState<boolean>(false);
-
+  // Edit Data preview panel collapsed state
+  const [editPreviewCollapsed, setEditPreviewCollapsed] = useState<boolean>(false);
+  
   useEffect(() => {
     if (!state) {
       navigate("/", { replace: true });
@@ -111,6 +113,17 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
   }
 
   const headers = state.table.headers;
+
+  const numberFormat = useMemo(() => new Intl.NumberFormat('en-US'), []);
+  const isCellNumeric = (val: unknown) => typeof val === 'number' || (val !== null && val !== undefined && !isNaN(Number(val)));
+  const numericHeaders = useMemo(() => {
+    const set = new Set<string>();
+    headers.forEach((h) => {
+      const sample = state.table.rows.find((r) => r[h] !== null && r[h] !== undefined)?.[h];
+      if (isCellNumeric(sample)) set.add(h);
+    });
+    return set;
+  }, [headers, state.table.rows]);
 
   // Determine labels for per-value color editing
   const xSel = xField || (state.table.headers.find((h) => state.table.rows.some((r) => typeof r[h] === 'string')) ?? state.table.headers[0]);
@@ -725,36 +738,63 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                       </TooltipTrigger>
                       <TooltipContent>Edit data</TooltipContent>
                     </Tooltip>
-                    <DrawerContent className="h-[80vh]">
-                      <DrawerHeader className="flex items-center justify-between">
-                        <DrawerTitle>Edit data</DrawerTitle>
-                        <span className="text-sm text-muted-foreground">{state.table.rows.length} rows</span>
+                    <DrawerContent className="h-[80vh] bg-sidebar text-sidebar-foreground">
+                      <DrawerHeader className="flex items-center justify-between border-b border-sidebar-border">
+                        <DrawerTitle className="text-lg">Edit data</DrawerTitle>
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm text-muted-foreground">{state.table.rows.length} rows</span>
+                          <Button variant="secondary" size="sm" onClick={() => setEditPreviewCollapsed((v) => !v)}>
+                            {editPreviewCollapsed ? 'Expand' : 'Collapse'}
+                          </Button>
+                        </div>
                       </DrawerHeader>
-                      <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-[1fr_360px]">
-                        <div className="overflow-auto rounded-lg border">
-                          <table className="w-full text-sm">
-                            <thead className="bg-secondary/30">
-                              <tr>
-                                {state.table.headers.map((h) => (
-                                  <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
-                                ))}
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {state.table.rows.map((r, i) => (
-                                <tr key={i} className="even:bg-secondary/10">
-                                  {state.table.headers.map((h) => (
-                                    <td key={h} className="px-3 py-2">{String(r[h] ?? "")}</td>
+                      <div className={`grid h-full grid-cols-1 gap-4 p-4 ${editPreviewCollapsed ? '' : 'md:grid-cols-[70%_30%]'}`}>
+                        {/* Table area (left ~70%) */}
+                        <div className="relative flex min-h-0 flex-col rounded-xl border border-sidebar-border bg-sidebar-accent">
+                          <div className="min-w-full overflow-auto">
+                            <table className="w-full min-w-[960px] text-sm">
+                              <thead className="sticky top-0 z-10 bg-sidebar">
+                                <tr>
+                                  {headers.map((h) => (
+                                    <th key={h} className={`px-3 py-2 font-semibold text-sidebar-foreground ${numericHeaders.has(h) ? 'text-right' : 'text-left'}`}>
+                                      <div className="flex items-center justify-between gap-2">
+                                        <span className="truncate">{h}</span>
+                                        {xField === h && (
+                                          <span className="ml-2 shrink-0 text-xs text-muted-foreground">x axis</span>
+                                        )}
+                                      </div>
+                                    </th>
                                   ))}
                                 </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                              </thead>
+                              <tbody>
+                                {state.table.rows.map((r, i) => (
+                                  <tr key={i} className="odd:bg-sidebar even:bg-sidebar-accent">
+                                    {headers.map((h) => {
+                                      const v = r[h];
+                                      const isNum = numericHeaders.has(h);
+                                      const display = isNum && isCellNumeric(v)
+                                        ? numberFormat.format(Number(v))
+                                        : String(v ?? '');
+                                      return (
+                                        <td key={h} className={`px-3 py-2 ${isNum ? 'text-right tabular-nums' : ''}`}>{display}</td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                          {/* Bottom horizontal scrollbar is preserved by overflow-auto */}
                         </div>
-                        <div className="space-y-4">
-                          <div className="rounded-xl border p-3">
-                            <div className="mb-2 text-sm font-medium">Preview</div>
-                            <div className="h-40 w-full rounded-md border bg-background/50">
+
+                        {/* Preview panel (right ~30%) */}
+                        {!editPreviewCollapsed && (
+                          <aside className="flex min-h-0 flex-col rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
+                            <div className="flex items-center justify-end">
+                              <Button variant="ghost" size="sm" onClick={() => setEditPreviewCollapsed(true)}>Collapse</Button>
+                            </div>
+                            <div className="mb-3 h-48 w-full rounded-md border border-sidebar-border bg-sidebar">
                               <ChartRenderer
                                 table={state.table}
                                 chart={chart}
@@ -768,26 +808,28 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                                 perValueColors={perValueColors}
                               />
                             </div>
-                          </div>
-                          <div className="rounded-xl border p-3">
-                            <div className="mb-2 text-sm font-medium">Chart type</div>
-                            <div className="grid grid-cols-3 gap-2">
-                              {chartTypes.map((t) => (
-                                <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
-                                  {t.label}
-                                </Button>
-                              ))}
+                            <div className="mb-3">
+                              <div className="mb-2 text-sm font-medium">Chart type</div>
+                              <div className="grid grid-cols-3 gap-2">
+                                {chartTypes.map((t) => (
+                                  <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
+                                    {t.label}
+                                  </Button>
+                                ))}
+                              </div>
                             </div>
-                            <div className="mt-3 text-sm font-medium">Bar chart appearance</div>
-                            <div className="mt-1 flex gap-2">
-                              <Button size="sm" variant="default">Grouped</Button>
-                              <Button size="sm" variant="secondary">Stacked</Button>
-                              <Button size="sm" variant="secondary">100% stacked</Button>
+                            <div className="mt-auto">
+                              <div className="mb-2 text-sm font-medium">Bar chart appearance</div>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant="default">Grouped</Button>
+                                <Button size="sm" variant="secondary">Stacked</Button>
+                                <Button size="sm" variant="secondary">100% stacked</Button>
+                              </div>
                             </div>
-                          </div>
-                        </div>
+                          </aside>
+                        )}
                       </div>
-                      <div className="border-t p-3 text-xs text-muted-foreground">
+                      <div className="border-t border-sidebar-border p-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-4">
                           <label className="inline-flex items-center gap-2"><input type="checkbox" className="accent-current" /> Swap rows and columns</label>
                           <button className="text-destructive" type="button">Clear table</button>
