@@ -14,48 +14,33 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbS
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
+
 import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home, Type, ArrowUpRight, Square, Highlighter, Target, TrendingUp, Sigma, PieChart, LineChart, Grid3X3, Filter, CircleDot } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { AIHelper } from "@/components/AIHelper";
-const chartTypes: {
-  value: ChartKind;
-  label: string;
-}[] = [{
-  value: "column",
-  label: "Column"
-}, {
-  value: "bar",
-  label: "Bar"
-}, {
-  value: "line",
-  label: "Line"
-}, {
-  value: "combo",
-  label: "Combo"
-}, {
-  value: "pie",
-  label: "Pie"
-}, {
-  value: "heatmap",
-  label: "Heatmap"
-}, {
-  value: "table",
-  label: "Table"
-}, {
-  value: "funnel",
-  label: "Funnel"
-}, {
-  value: "scatter",
-  label: "Scatter"
-}];
+
+const chartTypes: { value: ChartKind; label: string }[] = [
+  { value: "column", label: "Column" },
+  { value: "bar", label: "Bar" },
+  { value: "line", label: "Line" },
+  { value: "combo", label: "Combo" },
+  { value: "pie", label: "Pie" },
+  { value: "heatmap", label: "Heatmap" },
+  { value: "table", label: "Table" },
+  { value: "funnel", label: "Funnel" },
+  { value: "scatter", label: "Scatter" },
+];
+
 export default function Builder() {
   const navigate = useNavigate();
   const location = useLocation();
   const state = location.state as ParsedResult | undefined;
+
   const initialType = useMemo(() => {
     if (!state) return "table" as ChartKind;
     return suggestChartType(state.table.headers, state.table.rows) as ChartKind;
   }, [state]);
+
   const [chart, setChart] = useState<ChartKind>(initialType);
   const [xField, setXField] = useState<string | undefined>(undefined);
   const [yField, setYField] = useState<string | undefined>(undefined);
@@ -64,7 +49,7 @@ export default function Builder() {
   const [customHex, setCustomHex] = useState<string>("");
   const [opacity, setOpacity] = useState<number>(0.35);
   const [palette, setPalette] = useState<'neon' | 'colorful' | 'monochrome'>("neon");
-  const [perValueColors, setPerValueColors] = useState<Record<string, string>>({});
+const [perValueColors, setPerValueColors] = useState<Record<string, string>>({});
 
   // Size controls (UI only)
   const [sizeW, setSizeW] = useState<number>(967);
@@ -99,8 +84,8 @@ export default function Builder() {
   const [showSource, setShowSource] = useState<boolean>(false);
   const [showLogo, setShowLogo] = useState<boolean>(true);
   const [imageName, setImageName] = useState<string>("");
-  const [fontChoice, setFontChoice] = useState<'modern' | 'fresh' | 'timeless' | 'technical'>("modern");
-  const [textScale, setTextScale] = useState<0.8 | 1 | 1.2 | 1.4 | 1.6>(1);
+  const [fontChoice, setFontChoice] = useState<'modern'|'fresh'|'timeless'|'technical'>("modern");
+  const [textScale, setTextScale] = useState<0.8|1|1.2|1.4|1.6>(1);
 
   // Power-ups (UI only)
   const [goalOn, setGoalOn] = useState<boolean>(false);
@@ -108,65 +93,66 @@ export default function Builder() {
   const [averageOn, setAverageOn] = useState<boolean>(false);
   // Edit Data preview panel collapsed state
   const [editPreviewCollapsed, setEditPreviewCollapsed] = useState<boolean>(false);
+  
   useEffect(() => {
     if (!state) {
-      navigate("/", {
-        replace: true
-      });
+      navigate("/", { replace: true });
     }
   }, [state, navigate]);
+
   if (!state) {
-    return <main className="min-h-screen bg-background">
+    return (
+      <main className="min-h-screen bg-background">
         <div className="container py-10">
           <h1 className="mb-2 text-2xl font-semibold">No data loaded</h1>
           <p className="mb-6 text-muted-foreground">Please go back and upload a CSV/XLSX file to start building charts.</p>
           <Button variant="secondary" onClick={() => navigate("/")}>Go to Upload</Button>
         </div>
-      </main>;
+      </main>
+    );
   }
+
   const headers = state.table.headers;
+
   const numberFormat = useMemo(() => new Intl.NumberFormat('en-US'), []);
-  const isCellNumeric = (val: unknown) => typeof val === 'number' || val !== null && val !== undefined && !isNaN(Number(val));
+  const isCellNumeric = (val: unknown) => typeof val === 'number' || (val !== null && val !== undefined && !isNaN(Number(val)));
   const numericHeaders = useMemo(() => {
     const set = new Set<string>();
-    headers.forEach(h => {
-      const sample = state.table.rows.find(r => r[h] !== null && r[h] !== undefined)?.[h];
+    headers.forEach((h) => {
+      const sample = state.table.rows.find((r) => r[h] !== null && r[h] !== undefined)?.[h];
       if (isCellNumeric(sample)) set.add(h);
     });
     return set;
   }, [headers, state.table.rows]);
 
   // Determine labels for per-value color editing
-  const xSel = xField || (state.table.headers.find(h => state.table.rows.some(r => typeof r[h] === 'string')) ?? state.table.headers[0]);
+  const xSel = xField || (state.table.headers.find((h) => state.table.rows.some((r) => typeof r[h] === 'string')) ?? state.table.headers[0]);
   const rowLabels = state.table.rows.map((r, i) => String(r[xSel] ?? `Row ${i + 1}`));
   const uniqueLabels = Array.from(new Set(rowLabels)).slice(0, 50);
+
   const setLabelColor = (label: string, hex: string) => {
-    setPerValueColors(prev => {
-      const next = {
-        ...prev
-      };
-      if (!hex) delete next[label];else next[label] = hex;
+    setPerValueColors((prev) => {
+      const next = { ...prev };
+      if (!hex) delete next[label]; else next[label] = hex;
       return next;
     });
   };
+
   const copyEmbed = async () => {
     const code = `<iframe src="${window.location.origin}" title="Chart" style="width:100%;height:480px;border:0"></iframe>`;
     await navigator.clipboard.writeText(code);
     alert("Embed code copied to clipboard");
   };
+
   const shareConfig = async () => {
-    const payload = {
-      chart,
-      xField,
-      yField,
-      y2Field,
-      data: state.table
-    };
+    const payload = { chart, xField, yField, y2Field, data: state.table };
     const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
     await navigator.clipboard.writeText(encoded);
     alert("Share token copied. Paste it later to restore.");
   };
-  return <main className="min-h-screen bg-background">
+
+  return (
+    <main className="min-h-screen bg-background">
       <Helmet>
         <title>Chart Builder – Visualize your data</title>
         <meta name="description" content="Upload data and build interactive charts with Chart.js" />
@@ -178,10 +164,19 @@ export default function Builder() {
         <ResizablePanelGroup direction="horizontal" className="min-h-[720px] rounded-lg border">
           {/* Left: AI Assistant */}
           <ResizablePanel defaultSize={24} minSize={16} className="p-3">
-            <AIHelper tableSummary={`${state.table.headers.join(", ")} with ${state.table.rows.length} rows`} onApply={cmd => {
-            const c = cmd.toLowerCase();
-            if (c.includes("pie")) setChart("pie");else if (c.includes("line")) setChart("line");else if (c.includes("bar")) setChart("bar");else if (c.includes("column")) setChart("column");else if (c.includes("scatter")) setChart("scatter");else if (c.includes("funnel")) setChart("funnel");else if (c.includes("heat")) setChart("heatmap");
-          }} />
+            <AIHelper
+              tableSummary={`${state.table.headers.join(", ")} with ${state.table.rows.length} rows`}
+              onApply={(cmd) => {
+                const c = cmd.toLowerCase();
+                if (c.includes("pie")) setChart("pie");
+                else if (c.includes("line")) setChart("line");
+                else if (c.includes("bar")) setChart("bar");
+                else if (c.includes("column")) setChart("column");
+                else if (c.includes("scatter")) setChart("scatter");
+                else if (c.includes("funnel")) setChart("funnel");
+                else if (c.includes("heat")) setChart("heatmap");
+              }}
+            />
           </ResizablePanel>
           <ResizableHandle withHandle />
 
@@ -204,28 +199,49 @@ export default function Builder() {
                   <CardTitle className="text-xl">Example {chart} chart</CardTitle>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="secondary" onClick={copyEmbed}><Copy className="mr-2 h-4 w-4" />Embed</Button>
-                  <Button variant="secondary" onClick={shareConfig}><Share2 className="mr-2 h-4 w-4" />Share</Button>
-                  <Button onClick={() => window.print()}><Download className="mr-2 h-4 w-4" />Download</Button>
+                  <Button variant="secondary" onClick={copyEmbed}><Copy className="mr-2 h-4 w-4"/>Embed</Button>
+                  <Button variant="secondary" onClick={shareConfig}><Share2 className="mr-2 h-4 w-4"/>Share</Button>
+                  <Button onClick={() => window.print()}><Download className="mr-2 h-4 w-4"/>Download</Button>
                 </div>
               </CardHeader>
               <CardContent>
-                {chart === "table" ? <div className="max-h-[560px] overflow-auto rounded-md border border-border">
+                {chart === "table" ? (
+                  <div className="max-h-[560px] overflow-auto rounded-md border border-border">
                     <table className="w-full text-sm">
                       <thead className="bg-secondary/30">
                         <tr>
-                          {state.table.headers.map(h => <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>)}
+                          {state.table.headers.map((h) => (
+                            <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
+                          ))}
                         </tr>
                       </thead>
                       <tbody>
-                        {state.table.rows.map((r, i) => <tr key={i} className="even:bg-secondary/10">
-                            {state.table.headers.map(h => <td key={h} className="px-3 py-2">{String(r[h] ?? "")}</td>)}
-                          </tr>)}
+                        {state.table.rows.map((r, i) => (
+                          <tr key={i} className="even:bg-secondary/10">
+                            {state.table.headers.map((h) => (
+                              <td key={h} className="px-3 py-2">{String(r[h] ?? "")}</td>
+                            ))}
+                          </tr>
+                        ))}
                       </tbody>
                     </table>
-                  </div> : <div className="h-[600px]">
-                    <ChartRenderer table={state.table} chart={chart} xField={xField} yField={yField} y2Field={y2Field} colorVar={colorVar} customHex={customHex} opacity={opacity} palette={palette} perValueColors={perValueColors} />
-                  </div>}
+                  </div>
+                ) : (
+                  <div className="h-[600px]">
+                    <ChartRenderer
+                      table={state.table}
+                      chart={chart}
+                      xField={xField}
+                      yField={yField}
+                      y2Field={y2Field}
+                      colorVar={colorVar}
+                      customHex={customHex}
+                      opacity={opacity}
+                      palette={palette}
+                      perValueColors={perValueColors}
+                    />
+                  </div>
+                )}
               </CardContent>
             </Card>
           </ResizablePanel>
@@ -251,61 +267,40 @@ export default function Builder() {
                       <div className="space-y-3">
                         <div className="text-sm font-medium">Presets</div>
                         <div className="grid gap-2">
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1920);
-                          setSizeH(1080);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1920); setSizeH(1080); }}>
                             <span>Google Slides / PowerPoint</span>
                             <span className="text-xs text-muted-foreground">16:9</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1200);
-                          setSizeH(800);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1200); setSizeH(800); }}>
                             <span>Web / email</span>
                             <span className="text-xs text-muted-foreground">3:2</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1200);
-                          setSizeH(628);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1200); setSizeH(628); }}>
                             <span>LinkedIn post</span>
                             <span className="text-xs text-muted-foreground">1.91:1</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1080);
-                          setSizeH(1080);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1080); }}>
                             <span>Instagram post</span>
                             <span className="text-xs text-muted-foreground">1:1</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1080);
-                          setSizeH(1920);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1920); }}>
                             <span>TikTok / Instagram story</span>
                             <span className="text-xs text-muted-foreground">9:16</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1600);
-                          setSizeH(900);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1600); setSizeH(900); }}>
                             <span>X (Twitter)</span>
                             <span className="text-xs text-muted-foreground">16:9</span>
                           </Button>
-                          <Button variant="secondary" className="justify-between" onClick={() => {
-                          setSizeW(1080);
-                          setSizeH(1920);
-                        }}>
+                          <Button variant="secondary" className="justify-between" onClick={() => { setSizeW(1080); setSizeH(1920); }}>
                             <span>Mobile</span>
                             <span className="text-xs text-muted-foreground">9:16</span>
                           </Button>
                         </div>
                         <div className="text-sm font-medium pt-1">Custom size</div>
                         <div className="flex items-center gap-2">
-                          <Input type="number" value={sizeW} onChange={e => setSizeW(parseInt(e.target.value || '0'))} />
+                          <Input type="number" value={sizeW} onChange={(e) => setSizeW(parseInt(e.target.value || '0'))} />
                           <span className="text-xs text-muted-foreground">px</span>
-                          <Input type="number" value={sizeH} onChange={e => setSizeH(parseInt(e.target.value || '0'))} />
+                          <Input type="number" value={sizeH} onChange={(e) => setSizeH(parseInt(e.target.value || '0'))} />
                           <span className="text-xs text-muted-foreground">px</span>
                         </div>
                       </div>
@@ -326,34 +321,38 @@ export default function Builder() {
                     <PopoverContent side="left" align="center" className="w-[380px] p-4">
                       <div className="space-y-4">
                         <div className="grid grid-cols-3 gap-2">
-                          {chartTypes.map(t => <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
+                          {chartTypes.map((t) => (
+                            <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
                               {t.label}
-                            </Button>)}
+                            </Button>
+                          ))}
                         </div>
 
-                        {chart === 'pie' && <div>
+                        {chart === 'pie' && (
+                          <div>
                             <div className="mb-2 text-sm font-medium">Pie chart appearance</div>
                             <div className="flex gap-2">
-                              <Button size="sm" variant={!donut ? 'default' : 'secondary'} onClick={() => setDonut(false)}>Pie chart</Button>
-                              <Button size="sm" variant={donut ? 'default' : 'secondary'} onClick={() => setDonut(true)}>Donut chart</Button>
+                              <Button size="sm" variant={!donut ? 'default':'secondary'} onClick={() => setDonut(false)}>Pie chart</Button>
+                              <Button size="sm" variant={donut ? 'default':'secondary'} onClick={() => setDonut(true)}>Donut chart</Button>
                             </div>
-                          </div>}
+                          </div>
+                        )}
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Legend</div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={legendPos === 'top' ? 'default' : 'secondary'} onClick={() => setLegendPos('top')}>Top</Button>
-                            <Button size="sm" variant={legendPos === 'right' ? 'default' : 'secondary'} onClick={() => setLegendPos('right')}>Right</Button>
-                            <Button size="sm" variant={legendPos === 'none' ? 'default' : 'secondary'} onClick={() => setLegendPos('none')}>None</Button>
+                            <Button size="sm" variant={legendPos==='top'?'default':'secondary'} onClick={()=>setLegendPos('top')}>Top</Button>
+                            <Button size="sm" variant={legendPos==='right'?'default':'secondary'} onClick={()=>setLegendPos('right')}>Right</Button>
+                            <Button size="sm" variant={legendPos==='none'?'default':'secondary'} onClick={()=>setLegendPos('none')}>None</Button>
                           </div>
                         </div>
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Headline number</div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={headlinePos === 'none' ? 'default' : 'secondary'} onClick={() => setHeadlinePos('none')}>None</Button>
-                            <Button size="sm" variant={headlinePos === 'left' ? 'default' : 'secondary'} onClick={() => setHeadlinePos('left')}>Left</Button>
-                            <Button size="sm" variant={headlinePos === 'center' ? 'default' : 'secondary'} onClick={() => setHeadlinePos('center')}>Center</Button>
+                            <Button size="sm" variant={headlinePos==='none'?'default':'secondary'} onClick={()=>setHeadlinePos('none')}>None</Button>
+                            <Button size="sm" variant={headlinePos==='left'?'default':'secondary'} onClick={()=>setHeadlinePos('left')}>Left</Button>
+                            <Button size="sm" variant={headlinePos==='center'?'default':'secondary'} onClick={()=>setHeadlinePos('center')}>Center</Button>
                           </div>
                         </div>
 
@@ -375,7 +374,7 @@ export default function Builder() {
                         <div className="grid gap-2">
                           <div className="text-sm font-medium">Number format</div>
                           <div className="flex items-center gap-2">
-                            <Select value={abbrev} onValueChange={v => setAbbrev(v as typeof abbrev)}>
+                            <Select value={abbrev} onValueChange={(v)=>setAbbrev(v as typeof abbrev)}>
                               <SelectTrigger className="w-32">
                                 <SelectValue placeholder="Auto" />
                               </SelectTrigger>
@@ -386,8 +385,8 @@ export default function Builder() {
                               </SelectContent>
                             </Select>
                             <div className="ml-auto flex gap-2">
-                              <Button size="sm" variant={decimalPlaces === 'auto' ? 'default' : 'secondary'} onClick={() => setDecimalPlaces('auto')}>Auto</Button>
-                              <Button size="sm" variant={decimalPlaces === 'fixed' ? 'default' : 'secondary'} onClick={() => setDecimalPlaces('fixed')}>Fixed</Button>
+                              <Button size="sm" variant={decimalPlaces==='auto'?'default':'secondary'} onClick={()=>setDecimalPlaces('auto')}>Auto</Button>
+                              <Button size="sm" variant={decimalPlaces==='fixed'?'default':'secondary'} onClick={()=>setDecimalPlaces('fixed')}>Fixed</Button>
                             </div>
                           </div>
                         </div>
@@ -412,20 +411,20 @@ export default function Builder() {
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Visible</span>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={!xVisible ? 'default' : 'secondary'} onClick={() => setXVisible(false)}>No</Button>
-                            <Button size="sm" variant={xVisible ? 'default' : 'secondary'} onClick={() => setXVisible(true)}>Yes</Button>
+                            <Button size="sm" variant={!xVisible ? 'default':'secondary'} onClick={()=>setXVisible(false)}>No</Button>
+                            <Button size="sm" variant={xVisible ? 'default':'secondary'} onClick={()=>setXVisible(true)}>Yes</Button>
                           </div>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-sm">Position</span>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={xPosition === 'top' ? 'default' : 'secondary'} onClick={() => setXPosition('top')}>Top</Button>
-                            <Button size="sm" variant={xPosition === 'bottom' ? 'default' : 'secondary'} onClick={() => setXPosition('bottom')}>Bottom</Button>
+                            <Button size="sm" variant={xPosition==='top'?'default':'secondary'} onClick={()=>setXPosition('top')}>Top</Button>
+                            <Button size="sm" variant={xPosition==='bottom'?'default':'secondary'} onClick={()=>setXPosition('bottom')}>Bottom</Button>
                           </div>
                         </div>
                         <div>
                           <div className="mb-1 text-sm">End at</div>
-                          <Select value={xEndAt} onValueChange={v => setXEndAt(v as typeof xEndAt)}>
+                          <Select value={xEndAt} onValueChange={(v)=>setXEndAt(v as typeof xEndAt)}>
                             <SelectTrigger>
                               <SelectValue placeholder="Auto" />
                             </SelectTrigger>
@@ -456,40 +455,95 @@ export default function Builder() {
                         <div>
                           <div className="mb-2 text-sm font-medium">Theme</div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={themeMode === 'light' ? 'default' : 'secondary'} onClick={() => setThemeMode('light')}>Light</Button>
-                            <Button size="sm" variant={themeMode === 'dark' ? 'default' : 'secondary'} onClick={() => setThemeMode('dark')}>Dark</Button>
+                            <Button size="sm" variant={themeMode==='light'?'default':'secondary'} onClick={()=>setThemeMode('light')}>Light</Button>
+                            <Button size="sm" variant={themeMode==='dark'?'default':'secondary'} onClick={()=>setThemeMode('dark')}>Dark</Button>
                           </div>
                         </div>
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Palette</div>
                           <div className="mb-2 flex gap-2">
-                            <Button size="sm" variant={paletteTab === 'preset' ? 'default' : 'secondary'} onClick={() => setPaletteTab('preset')}>Preset</Button>
-                            <Button size="sm" variant={paletteTab === 'brand' ? 'default' : 'secondary'} onClick={() => setPaletteTab('brand')}>Brand kit</Button>
-                            <Button size="sm" variant={paletteTab === 'freestyle' ? 'default' : 'secondary'} onClick={() => setPaletteTab('freestyle')}>Freestyle</Button>
+                            <Button size="sm" variant={paletteTab==='preset'?'default':'secondary'} onClick={()=>setPaletteTab('preset')}>Preset</Button>
+                            <Button size="sm" variant={paletteTab==='brand'?'default':'secondary'} onClick={()=>setPaletteTab('brand')}>Brand kit</Button>
+                            <Button size="sm" variant={paletteTab==='freestyle'?'default':'secondary'} onClick={()=>setPaletteTab('freestyle')}>Freestyle</Button>
                           </div>
                           <div className="mb-2 flex flex-wrap items-center gap-2">
-                            <Button variant={palette === 'monochrome' ? 'default' : 'secondary'} size="sm" onClick={() => setPalette('monochrome')}>Monochrome</Button>
-                            <Button variant={palette === 'colorful' ? 'default' : 'secondary'} size="sm" onClick={() => setPalette('colorful')}>Colorful</Button>
-                            <Button variant={palette === 'neon' ? 'default' : 'secondary'} size="sm" onClick={() => setPalette('neon')}>Neon</Button>
+                            <Button variant={palette==='monochrome'? 'default':'secondary'} size="sm" onClick={() => setPalette('monochrome')}>Monochrome</Button>
+                            <Button variant={palette==='colorful'? 'default':'secondary'} size="sm" onClick={() => setPalette('colorful')}>Colorful</Button>
+                            <Button variant={palette==='neon'? 'default':'secondary'} size="sm" onClick={() => setPalette('neon')}>Neon</Button>
                           </div>
 
                           <div>
-                            
-                            
-                            <div className="mb-2 flex items-center gap-2">
-                              <Input placeholder="#22c55e" value={customHex} onChange={e => {
-                              setCustomHex(e.target.value);
-                              if (e.target.value) setColorVar(undefined);
-                            }} />
-                              {customHex && <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>}
+                            <div className="mb-1 text-sm text-muted-foreground">Base color</div>
+                            <div className="mb-2 flex flex-wrap items-center gap-2">
+                              <button
+                                type="button"
+                                aria-label="Theme default"
+                                onClick={() => { setColorVar(undefined); setCustomHex(""); }}
+                                className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}
+                              >
+                                Theme
+                              </button>
+                              <button type="button" aria-label="Neon 1" onClick={() => { setColorVar("--chart-neon-1"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-1" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-1))` }} />
+                              <button type="button" aria-label="Neon 2" onClick={() => { setColorVar("--chart-neon-2"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-2" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-2))` }} />
+                              <button type="button" aria-label="Neon 3" onClick={() => { setColorVar("--chart-neon-3"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-3" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-3))` }} />
+                              <button type="button" aria-label="Neon 4" onClick={() => { setColorVar("--chart-neon-4"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-4" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-4))` }} />
+                              <button type="button" aria-label="Neon 5" onClick={() => { setColorVar("--chart-neon-5"); setCustomHex(""); }}
+                                className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-5" ? 'ring-2 ring-ring' : ''}`}
+                                style={{ backgroundColor: `hsl(var(--chart-neon-5))` }} />
+                            </div>
+
+                            {/* Modern neon presets with glow */}
+                            {palette === 'neon' && (
+                              <div className="mt-2">
+                                <div className="mb-1 text-xs text-muted-foreground">Modern neon</div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {["#00f0ff", "#ff1cf7", "#7c3aed", "#a3ff00", "#ff6b00", "#60a5fa"].map((hex) => (
+                                    <button
+                                      key={hex}
+                                      type="button"
+                                      aria-label={`Neon ${hex}`}
+                                      onClick={() => { setCustomHex(hex); setColorVar(undefined); }}
+                                      className={`h-6 w-6 rounded-full border ${customHex === hex ? 'ring-2 ring-ring' : ''}`}
+                                      style={{ backgroundColor: hex, boxShadow: `0 0 12px ${hex}` }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="mb-2 mt-2 flex items-center gap-2">
+                              <input
+                                type="color"
+                                aria-label="Pick color"
+                                value={customHex || "#22c55e"}
+                                onChange={(e) => { setCustomHex(e.target.value); setColorVar(undefined); }}
+                                className="h-9 w-10 cursor-pointer rounded-md border border-input bg-background"
+                              />
+                              <Input
+                                placeholder="#22c55e"
+                                value={customHex}
+                                onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }}
+                                className="flex-1"
+                              />
+                              {customHex && (
+                                <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>
+                              )}
                             </div>
                             <div>
                               <div className="mb-1 flex items-center justify-between text-xs text-muted-foreground">
                                 <span>Opacity</span>
                                 <span>{Math.round((opacity ?? 0.35) * 100)}%</span>
                               </div>
-                              <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={v => setOpacity(v[0] ?? 0.35)} />
+                              <Slider value={[opacity]} min={0.05} max={1} step={0.05} onValueChange={(v) => setOpacity(v[0] ?? 0.35)} />
                             </div>
                           </div>
                         </div>
@@ -497,42 +551,29 @@ export default function Builder() {
                         <div>
                           <div className="mb-2 text-sm font-medium">Chart border</div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={chartBorder === 'none' ? 'default' : 'secondary'} onClick={() => setChartBorder('none')}>None</Button>
-                            <Button size="sm" variant={chartBorder === 'gradient' ? 'default' : 'secondary'} onClick={() => setChartBorder('gradient')}>Gradient</Button>
-                            <Button size="sm" variant={chartBorder === 'solid' ? 'default' : 'secondary'} onClick={() => setChartBorder('solid')}>Solid</Button>
+                            <Button size="sm" variant={chartBorder==='none'?'default':'secondary'} onClick={()=>setChartBorder('none')}>None</Button>
+                            <Button size="sm" variant={chartBorder==='gradient'?'default':'secondary'} onClick={()=>setChartBorder('gradient')}>Gradient</Button>
+                            <Button size="sm" variant={chartBorder==='solid'?'default':'secondary'} onClick={()=>setChartBorder('solid')}>Solid</Button>
                           </div>
                         </div>
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Corners</div>
                           <div className="flex gap-2">
-                            <Button size="sm" variant={roundedCorners ? 'default' : 'secondary'} onClick={() => setRoundedCorners(true)}>Rounded corners</Button>
-                            <Button size="sm" variant={!roundedCorners ? 'default' : 'secondary'} onClick={() => setRoundedCorners(false)}>Sharp corners</Button>
+                            <Button size="sm" variant={roundedCorners?'default':'secondary'} onClick={()=>setRoundedCorners(true)}>Rounded corners</Button>
+                            <Button size="sm" variant={!roundedCorners?'default':'secondary'} onClick={()=>setRoundedCorners(false)}>Sharp corners</Button>
                           </div>
                         </div>
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Chart background</div>
                           <div className="flex flex-wrap gap-2">
-                            {(['black', 'grey', 'tint', 'custom', 'none'] as const).map(bg => <Button key={bg} size="sm" variant={chartBg === bg ? 'default' : 'secondary'} onClick={() => setChartBg(bg)} className="capitalize">{bg}</Button>)}
+                            {(['black','grey','tint','custom','none'] as const).map((bg) => (
+                              <Button key={bg} size="sm" variant={chartBg===bg ? 'default':'secondary'} onClick={()=>setChartBg(bg)} className="capitalize">{bg}</Button>
+                            ))}
                           </div>
                         </div>
 
-                        {/* Per-value colors */}
-                        <div className="pt-2">
-                          <div className="mb-2 flex items-center justify-between">
-                            <label className="block text-sm text-muted-foreground">Per-value colors</label>
-                            <Button variant="secondary" size="sm" onClick={() => setPerValueColors({})}>Reset all</Button>
-                          </div>
-                          <div className="max-h-64 space-y-2 overflow-auto pr-1">
-                            {uniqueLabels.map(lbl => <div key={lbl} className="flex items-center gap-2">
-                                <input aria-label={`Color for ${lbl}`} type="color" className="h-6 w-6 cursor-pointer rounded border border-input bg-background" value={perValueColors[lbl] || "#000000"} onChange={e => setLabelColor(lbl, e.target.value)} />
-                                <span className="flex-1 truncate text-sm">{lbl}</span>
-                                <Input className="w-28" placeholder="#000000" value={perValueColors[lbl] || ""} onChange={e => setLabelColor(lbl, e.target.value)} />
-                              </div>)}
-                            {rowLabels.length > uniqueLabels.length && <p className="pt-1 text-xs text-muted-foreground">Showing first {uniqueLabels.length} values.</p>}
-                          </div>
-                        </div>
                       </div>
                     </PopoverContent>
                   </Popover>
@@ -556,15 +597,15 @@ export default function Builder() {
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Title</span>
                               <div className="flex gap-2">
-                                <Button size="sm" variant={showTitle ? 'default' : 'secondary'} onClick={() => setShowTitle(true)}>Yes</Button>
-                                <Button size="sm" variant={!showTitle ? 'default' : 'secondary'} onClick={() => setShowTitle(false)}>No</Button>
+                                <Button size="sm" variant={showTitle ? 'default':'secondary'} onClick={()=>setShowTitle(true)}>Yes</Button>
+                                <Button size="sm" variant={!showTitle ? 'default':'secondary'} onClick={()=>setShowTitle(false)}>No</Button>
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Subtitle</span>
                               <div className="flex gap-2">
-                                <Button size="sm" variant={showSubtitle ? 'default' : 'secondary'} onClick={() => setShowSubtitle(true)}>Yes</Button>
-                                <Button size="sm" variant={!showSubtitle ? 'default' : 'secondary'} onClick={() => setShowSubtitle(false)}>No</Button>
+                                <Button size="sm" variant={showSubtitle ? 'default':'secondary'} onClick={()=>setShowSubtitle(true)}>Yes</Button>
+                                <Button size="sm" variant={!showSubtitle ? 'default':'secondary'} onClick={()=>setShowSubtitle(false)}>No</Button>
                               </div>
                             </div>
                           </div>
@@ -576,32 +617,27 @@ export default function Builder() {
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Caption</span>
                               <div className="flex gap-2">
-                                <Button size="sm" variant={showCaption ? 'default' : 'secondary'} onClick={() => setShowCaption(true)}>Yes</Button>
-                                <Button size="sm" variant={!showCaption ? 'default' : 'secondary'} onClick={() => setShowCaption(false)}>No</Button>
+                                <Button size="sm" variant={showCaption ? 'default':'secondary'} onClick={()=>setShowCaption(true)}>Yes</Button>
+                                <Button size="sm" variant={!showCaption ? 'default':'secondary'} onClick={()=>setShowCaption(false)}>No</Button>
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Source</span>
                               <div className="flex gap-2">
-                                <Button size="sm" variant={showSource ? 'default' : 'secondary'} onClick={() => setShowSource(true)}>Yes</Button>
-                                <Button size="sm" variant={!showSource ? 'default' : 'secondary'} onClick={() => setShowSource(false)}>No</Button>
+                                <Button size="sm" variant={showSource ? 'default':'secondary'} onClick={()=>setShowSource(true)}>Yes</Button>
+                                <Button size="sm" variant={!showSource ? 'default':'secondary'} onClick={()=>setShowSource(false)}>No</Button>
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Logo</span>
                               <div className="flex gap-2">
-                                <Button size="sm" variant={showLogo ? 'default' : 'secondary'} onClick={() => setShowLogo(true)}>Yes</Button>
-                                <Button size="sm" variant={!showLogo ? 'default' : 'secondary'} onClick={() => setShowLogo(false)}>No</Button>
+                                <Button size="sm" variant={showLogo ? 'default':'secondary'} onClick={()=>setShowLogo(true)}>Yes</Button>
+                                <Button size="sm" variant={!showLogo ? 'default':'secondary'} onClick={()=>setShowLogo(false)}>No</Button>
                               </div>
                             </div>
                             <div className="flex items-center justify-between">
                               <span className="text-sm">Image</span>
-                              <Input type="file" className="w-40" onChange={e => {
-                              const f = e.target.files?.[0];
-                              if (f) {
-                                setImageName(f.name);
-                              }
-                            }} />
+                              <Input type="file" className="w-40" onChange={(e)=>{ const f=e.target.files?.[0]; if(f){ setImageName(f.name); } }} />
                             </div>
                           </div>
                         </div>
@@ -609,30 +645,27 @@ export default function Builder() {
                         <div>
                           <div className="mb-2 text-sm font-medium">Font</div>
                           <div className="grid grid-cols-4 gap-2">
-                            {([{
-                            k: 'modern',
-                            label: 'Modern'
-                          }, {
-                            k: 'fresh',
-                            label: 'Fresh'
-                          }, {
-                            k: 'timeless',
-                            label: 'Timeless'
-                          }, {
-                            k: 'technical',
-                            label: 'Technical'
-                          }] as const).map(f => <Button key={f.k} variant={fontChoice === f.k ? 'default' : 'secondary'} size="sm" onClick={() => setFontChoice(f.k as typeof fontChoice)}>
+                            {([
+                              {k:'modern', label:'Modern'},
+                              {k:'fresh', label:'Fresh'},
+                              {k:'timeless', label:'Timeless'},
+                              {k:'technical', label:'Technical'}
+                            ] as const).map((f)=> (
+                              <Button key={f.k} variant={fontChoice===f.k ? 'default':'secondary'} size="sm" onClick={()=>setFontChoice(f.k as typeof fontChoice)}>
                                 Aa {f.label}
-                              </Button>)}
+                              </Button>
+                            ))}
                           </div>
                         </div>
 
                         <div>
                           <div className="mb-2 text-sm font-medium">Text size</div>
                           <div className="flex flex-wrap gap-2">
-                            {([0.8, 1, 1.2, 1.4, 1.6] as const).map(s => <Button key={s} size="sm" variant={textScale === s ? 'default' : 'secondary'} onClick={() => setTextScale(s)}>
+                            {([0.8,1,1.2,1.4,1.6] as const).map((s) => (
+                              <Button key={s} size="sm" variant={textScale===s? 'default':'secondary'} onClick={()=>setTextScale(s)}>
                                 {s}x
-                              </Button>)}
+                              </Button>
+                            ))}
                           </div>
                         </div>
                       </div>
@@ -718,7 +751,7 @@ export default function Builder() {
                         <DrawerTitle className="text-lg">Edit data</DrawerTitle>
                         <div className="flex items-center gap-3">
                           <span className="text-sm text-muted-foreground">{state.table.rows.length} rows</span>
-                          <Button variant="secondary" size="sm" onClick={() => setEditPreviewCollapsed(v => !v)}>
+                          <Button variant="secondary" size="sm" onClick={() => setEditPreviewCollapsed((v) => !v)}>
                             {editPreviewCollapsed ? 'Expand' : 'Collapse'}
                           </Button>
                         </div>
@@ -730,23 +763,33 @@ export default function Builder() {
                             <table className="w-full min-w-[960px] text-sm">
                               <thead className="sticky top-0 z-10 bg-sidebar">
                                 <tr>
-                                  {headers.map(h => <th key={h} className={`px-3 py-2 font-semibold text-sidebar-foreground ${numericHeaders.has(h) ? 'text-right' : 'text-left'}`}>
+                                  {headers.map((h) => (
+                                    <th key={h} className={`px-3 py-2 font-semibold text-sidebar-foreground ${numericHeaders.has(h) ? 'text-right' : 'text-left'}`}>
                                       <div className="flex items-center justify-between gap-2">
                                         <span className="truncate">{h}</span>
-                                        {xField === h && <span className="ml-2 shrink-0 text-xs text-muted-foreground">x axis</span>}
+                                        {xField === h && (
+                                          <span className="ml-2 shrink-0 text-xs text-muted-foreground">x axis</span>
+                                        )}
                                       </div>
-                                    </th>)}
+                                    </th>
+                                  ))}
                                 </tr>
                               </thead>
                               <tbody>
-                                {state.table.rows.map((r, i) => <tr key={i} className="odd:bg-sidebar even:bg-sidebar-accent">
-                                    {headers.map(h => {
-                                  const v = r[h];
-                                  const isNum = numericHeaders.has(h);
-                                  const display = isNum && isCellNumeric(v) ? numberFormat.format(Number(v)) : String(v ?? '');
-                                  return <td key={h} className={`px-3 py-2 ${isNum ? 'text-right tabular-nums' : ''}`}>{display}</td>;
-                                })}
-                                  </tr>)}
+                                {state.table.rows.map((r, i) => (
+                                  <tr key={i} className="odd:bg-sidebar even:bg-sidebar-accent">
+                                    {headers.map((h) => {
+                                      const v = r[h];
+                                      const isNum = numericHeaders.has(h);
+                                      const display = isNum && isCellNumeric(v)
+                                        ? numberFormat.format(Number(v))
+                                        : String(v ?? '');
+                                      return (
+                                        <td key={h} className={`px-3 py-2 ${isNum ? 'text-right tabular-nums' : ''}`}>{display}</td>
+                                      );
+                                    })}
+                                  </tr>
+                                ))}
                               </tbody>
                             </table>
                           </div>
@@ -754,22 +797,54 @@ export default function Builder() {
                         </div>
 
                         {/* Preview panel (right ~30%) */}
-                        {!editPreviewCollapsed && <aside className="flex min-h-0 flex-col overflow-y-auto rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
+                        {!editPreviewCollapsed && (
+                          <aside className="flex min-h-0 flex-col overflow-y-auto rounded-xl border border-sidebar-border bg-sidebar-accent p-3">
                             <div className="flex items-center justify-end">
                               <Button variant="ghost" size="sm" onClick={() => setEditPreviewCollapsed(true)}>Collapse</Button>
                             </div>
-                            <div className="mb-3 h-56 w-full rounded-md border border-sidebar-border" style={{
-                          backgroundColor: "hsl(var(--surface-black))"
-                        }}>
-                              <ChartRenderer table={state.table} chart={chart} xField={xField} yField={yField} y2Field={y2Field} colorVar={colorVar} customHex={customHex} opacity={opacity} palette={palette} perValueColors={perValueColors} />
+                            <div className="mb-3 h-56 w-full rounded-md border border-sidebar-border" style={{ backgroundColor: "hsl(var(--surface-black))" }}>
+                              <ChartRenderer
+                                table={state.table}
+                                chart={chart}
+                                xField={xField}
+                                yField={yField}
+                                y2Field={y2Field}
+                                colorVar={colorVar}
+                                customHex={customHex}
+                                opacity={opacity}
+                                palette={palette}
+                                perValueColors={perValueColors}
+                              />
                             </div>
                             <div className="mb-3">
                               <div className="mb-2 text-sm font-medium">Chart type</div>
                               <div className="grid grid-cols-3 gap-3">
-                                {chartTypes.map(t => <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)} className="h-20 flex flex-col items-center justify-center gap-1">
-                                    {t.value === 'pie' ? <PieChart className="h-5 w-5" /> : t.value === 'line' ? <LineChart className="h-5 w-5" /> : t.value === 'heatmap' ? <Grid3X3 className="h-5 w-5" /> : t.value === 'table' ? <TableIcon className="h-5 w-5" /> : t.value === 'funnel' ? <Filter className="h-5 w-5" /> : t.value === 'scatter' ? <CircleDot className="h-5 w-5" /> : <BarChart3 className="h-5 w-5" />}
+                                {chartTypes.map((t) => (
+                                  <Button
+                                    key={t.value}
+                                    variant={chart === t.value ? 'default' : 'secondary'}
+                                    size="sm"
+                                    onClick={() => setChart(t.value)}
+                                    className="h-20 flex flex-col items-center justify-center gap-1"
+                                  >
+                                    {t.value === 'pie' ? (
+                                      <PieChart className="h-5 w-5" />
+                                    ) : t.value === 'line' ? (
+                                      <LineChart className="h-5 w-5" />
+                                    ) : t.value === 'heatmap' ? (
+                                      <Grid3X3 className="h-5 w-5" />
+                                    ) : t.value === 'table' ? (
+                                      <TableIcon className="h-5 w-5" />
+                                    ) : t.value === 'funnel' ? (
+                                      <Filter className="h-5 w-5" />
+                                    ) : t.value === 'scatter' ? (
+                                      <CircleDot className="h-5 w-5" />
+                                    ) : (
+                                      <BarChart3 className="h-5 w-5" />
+                                    )}
                                     <span className="text-xs">{t.label}</span>
-                                  </Button>)}
+                                  </Button>
+                                ))}
                               </div>
                             </div>
                             <div className="mt-auto">
@@ -780,7 +855,8 @@ export default function Builder() {
                                 <Button size="sm" variant="secondary">100% stacked</Button>
                               </div>
                             </div>
-                          </aside>}
+                          </aside>
+                        )}
                       </div>
                       <div className="border-t border-sidebar-border p-3 text-xs text-muted-foreground">
                         <div className="flex items-center gap-4">
@@ -796,5 +872,7 @@ export default function Builder() {
           </ResizablePanel>
         </ResizablePanelGroup>
       </div>
-    </main>;
+    </main>
+  );
 }
+
