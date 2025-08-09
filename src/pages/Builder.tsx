@@ -476,8 +476,14 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                           <div>
                             <div className="mb-1 text-sm text-muted-foreground">Base color</div>
                             <div className="mb-2 flex flex-wrap items-center gap-2">
-                              <button type="button" aria-label="Theme default" onClick={() => { setColorVar(undefined); setCustomHex(""); }}
-                                className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}>Theme</button>
+                              <button
+                                type="button"
+                                aria-label="Theme default"
+                                onClick={() => { setColorVar(undefined); setCustomHex(""); }}
+                                className={`h-8 rounded border px-2 text-xs ${!colorVar && !customHex ? 'ring-2 ring-ring' : ''}`}
+                              >
+                                Theme
+                              </button>
                               <button type="button" aria-label="Neon 1" onClick={() => { setColorVar("--chart-neon-1"); setCustomHex(""); }}
                                 className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-1" ? 'ring-2 ring-ring' : ''}`}
                                 style={{ backgroundColor: `hsl(var(--chart-neon-1))` }} />
@@ -494,8 +500,40 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                                 className={`h-6 w-6 rounded-full border ${colorVar === "--chart-neon-5" ? 'ring-2 ring-ring' : ''}`}
                                 style={{ backgroundColor: `hsl(var(--chart-neon-5))` }} />
                             </div>
-                            <div className="mb-2 flex items-center gap-2">
-                              <Input placeholder="#22c55e" value={customHex} onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }} />
+
+                            {/* Modern neon presets with glow */}
+                            {palette === 'neon' && (
+                              <div className="mt-2">
+                                <div className="mb-1 text-xs text-muted-foreground">Modern neon</div>
+                                <div className="flex flex-wrap items-center gap-2">
+                                  {["#00f0ff", "#ff1cf7", "#7c3aed", "#a3ff00", "#ff6b00", "#60a5fa"].map((hex) => (
+                                    <button
+                                      key={hex}
+                                      type="button"
+                                      aria-label={`Neon ${hex}`}
+                                      onClick={() => { setCustomHex(hex); setColorVar(undefined); }}
+                                      className={`h-6 w-6 rounded-full border ${customHex === hex ? 'ring-2 ring-ring' : ''}`}
+                                      style={{ backgroundColor: hex, boxShadow: `0 0 12px ${hex}` }}
+                                    />
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+
+                            <div className="mb-2 mt-2 flex items-center gap-2">
+                              <input
+                                type="color"
+                                aria-label="Pick color"
+                                value={customHex || "#22c55e"}
+                                onChange={(e) => { setCustomHex(e.target.value); setColorVar(undefined); }}
+                                className="h-9 w-10 cursor-pointer rounded-md border border-input bg-background"
+                              />
+                              <Input
+                                placeholder="#22c55e"
+                                value={customHex}
+                                onChange={(e) => { setCustomHex(e.target.value); if (e.target.value) setColorVar(undefined); }}
+                                className="flex-1"
+                              />
                               {customHex && (
                                 <Button variant="secondary" onClick={() => setCustomHex("")}>Clear</Button>
                               )}
@@ -536,36 +574,6 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                           </div>
                         </div>
 
-                        {/* Per-value colors */}
-                        <div className="pt-2">
-                          <div className="mb-2 flex items-center justify-between">
-                            <label className="block text-sm text-muted-foreground">Per-value colors</label>
-                            <Button variant="secondary" size="sm" onClick={() => setPerValueColors({})}>Reset all</Button>
-                          </div>
-                          <div className="max-h-64 space-y-2 overflow-auto pr-1">
-                            {uniqueLabels.map((lbl) => (
-                              <div key={lbl} className="flex items-center gap-2">
-                                <input
-                                  aria-label={`Color for ${lbl}`}
-                                  type="color"
-                                  className="h-6 w-6 cursor-pointer rounded border border-input bg-background"
-                                  value={perValueColors[lbl] || "#000000"}
-                                  onChange={(e) => setLabelColor(lbl, e.target.value)}
-                                />
-                                <span className="flex-1 truncate text-sm">{lbl}</span>
-                                <Input
-                                  className="w-28"
-                                  placeholder="#000000"
-                                  value={perValueColors[lbl] || ""}
-                                  onChange={(e) => setLabelColor(lbl, e.target.value)}
-                                />
-                              </div>
-                            ))}
-                            {rowLabels.length > uniqueLabels.length && (
-                              <p className="pt-1 text-xs text-muted-foreground">Showing first {uniqueLabels.length} values.</p>
-                            )}
-                          </div>
-                        </div>
                       </div>
                     </PopoverContent>
                   </Popover>
