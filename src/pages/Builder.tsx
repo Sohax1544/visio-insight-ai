@@ -13,8 +13,9 @@ import { Switch } from "@/components/ui/switch";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator, BreadcrumbPage } from "@/components/ui/breadcrumb";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 
-import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home } from "lucide-react";
+import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home, Type, ArrowUpRight, Square, Highlighter, Target, TrendingUp, Sigma } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { AIHelper } from "@/components/AIHelper";
 
@@ -75,6 +76,21 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
   const [chartBorder, setChartBorder] = useState<'none' | 'gradient' | 'solid'>('gradient');
   const [roundedCorners, setRoundedCorners] = useState<boolean>(true);
   const [chartBg, setChartBg] = useState<'black' | 'grey' | 'tint' | 'custom' | 'none'>('tint');
+
+  // Elements options (UI only)
+  const [showTitle, setShowTitle] = useState<boolean>(true);
+  const [showSubtitle, setShowSubtitle] = useState<boolean>(true);
+  const [showCaption, setShowCaption] = useState<boolean>(false);
+  const [showSource, setShowSource] = useState<boolean>(false);
+  const [showLogo, setShowLogo] = useState<boolean>(true);
+  const [imageName, setImageName] = useState<string>("");
+  const [fontChoice, setFontChoice] = useState<'modern'|'fresh'|'timeless'|'technical'>("modern");
+  const [textScale, setTextScale] = useState<0.8|1|1.2|1.4|1.6>(1);
+
+  // Power-ups (UI only)
+  const [goalOn, setGoalOn] = useState<boolean>(false);
+  const [trendOn, setTrendOn] = useState<boolean>(false);
+  const [averageOn, setAverageOn] = useState<boolean>(false);
 
   useEffect(() => {
     if (!state) {
@@ -541,41 +557,244 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                     </PopoverContent>
                   </Popover>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <Boxes className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Elements</TooltipContent>
-                  </Tooltip>
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <Boxes className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Elements</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-[420px] p-4">
+                      <div className="space-y-4">
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Header</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Title</span>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant={showTitle ? 'default':'secondary'} onClick={()=>setShowTitle(true)}>Yes</Button>
+                                <Button size="sm" variant={!showTitle ? 'default':'secondary'} onClick={()=>setShowTitle(false)}>No</Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Subtitle</span>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant={showSubtitle ? 'default':'secondary'} onClick={()=>setShowSubtitle(true)}>Yes</Button>
+                                <Button size="sm" variant={!showSubtitle ? 'default':'secondary'} onClick={()=>setShowSubtitle(false)}>No</Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <Pencil className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Annotate</TooltipContent>
-                  </Tooltip>
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Footer</div>
+                          <div className="space-y-2">
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Caption</span>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant={showCaption ? 'default':'secondary'} onClick={()=>setShowCaption(true)}>Yes</Button>
+                                <Button size="sm" variant={!showCaption ? 'default':'secondary'} onClick={()=>setShowCaption(false)}>No</Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Source</span>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant={showSource ? 'default':'secondary'} onClick={()=>setShowSource(true)}>Yes</Button>
+                                <Button size="sm" variant={!showSource ? 'default':'secondary'} onClick={()=>setShowSource(false)}>No</Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Logo</span>
+                              <div className="flex gap-2">
+                                <Button size="sm" variant={showLogo ? 'default':'secondary'} onClick={()=>setShowLogo(true)}>Yes</Button>
+                                <Button size="sm" variant={!showLogo ? 'default':'secondary'} onClick={()=>setShowLogo(false)}>No</Button>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-sm">Image</span>
+                              <Input type="file" className="w-40" onChange={(e)=>{ const f=e.target.files?.[0]; if(f){ setImageName(f.name); } }} />
+                            </div>
+                          </div>
+                        </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg">
-                        <Zap className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Power-ups</TooltipContent>
-                  </Tooltip>
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Font</div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {([
+                              {k:'modern', label:'Modern'},
+                              {k:'fresh', label:'Fresh'},
+                              {k:'timeless', label:'Timeless'},
+                              {k:'technical', label:'Technical'}
+                            ] as const).map((f)=> (
+                              <Button key={f.k} variant={fontChoice===f.k ? 'default':'secondary'} size="sm" onClick={()=>setFontChoice(f.k as typeof fontChoice)}>
+                                Aa {f.label}
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
 
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button variant="ghost" size="icon" className="rounded-lg" onClick={() => setChart('table')}>
-                        <TableIcon className="h-5 w-5" />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>Edit data</TooltipContent>
-                  </Tooltip>
+                        <div>
+                          <div className="mb-2 text-sm font-medium">Text size</div>
+                          <div className="flex flex-wrap gap-2">
+                            {([0.8,1,1.2,1.4,1.6] as const).map((s) => (
+                              <Button key={s} size="sm" variant={textScale===s? 'default':'secondary'} onClick={()=>setTextScale(s)}>
+                                {s}x
+                              </Button>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <Pencil className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Annotate</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-80 p-4">
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium">Call-out</div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button variant="secondary" className="h-16 justify-start gap-2">
+                            <Type className="h-5 w-5" /> Text
+                          </Button>
+                          <Button variant="secondary" className="h-16 justify-start gap-2">
+                            <ArrowUpRight className="h-5 w-5" /> Arrow
+                          </Button>
+                          <Button variant="secondary" className="h-16 justify-start gap-2 col-span-2">
+                            <Square className="h-5 w-5" /> Box
+                          </Button>
+                        </div>
+                        <div className="pt-2">
+                          <Button variant="secondary" className="h-12 w-full justify-start gap-2">
+                            <Highlighter className="h-5 w-5" /> Highlight
+                          </Button>
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Popover>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <PopoverTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <Zap className="h-5 w-5" />
+                          </Button>
+                        </PopoverTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Power-ups</TooltipContent>
+                    </Tooltip>
+                    <PopoverContent side="left" align="center" className="w-72 p-4">
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2"><Target className="h-5 w-5" /><span className="text-sm">Goal</span></div>
+                          <Switch checked={goalOn} onCheckedChange={setGoalOn} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2"><TrendingUp className="h-5 w-5" /><span className="text-sm">Trend</span></div>
+                          <Switch checked={trendOn} onCheckedChange={setTrendOn} />
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2"><Sigma className="h-5 w-5" /><span className="text-sm">Average</span></div>
+                          <Switch checked={averageOn} onCheckedChange={setAverageOn} />
+                        </div>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+
+                  <Drawer>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <DrawerTrigger asChild>
+                          <Button variant="ghost" size="icon" className="rounded-lg">
+                            <TableIcon className="h-5 w-5" />
+                          </Button>
+                        </DrawerTrigger>
+                      </TooltipTrigger>
+                      <TooltipContent>Edit data</TooltipContent>
+                    </Tooltip>
+                    <DrawerContent className="h-[80vh]">
+                      <DrawerHeader className="flex items-center justify-between">
+                        <DrawerTitle>Edit data</DrawerTitle>
+                        <span className="text-sm text-muted-foreground">{state.table.rows.length} rows</span>
+                      </DrawerHeader>
+                      <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-[1fr_360px]">
+                        <div className="overflow-auto rounded-lg border">
+                          <table className="w-full text-sm">
+                            <thead className="bg-secondary/30">
+                              <tr>
+                                {state.table.headers.map((h) => (
+                                  <th key={h} className="px-3 py-2 text-left font-medium">{h}</th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {state.table.rows.map((r, i) => (
+                                <tr key={i} className="even:bg-secondary/10">
+                                  {state.table.headers.map((h) => (
+                                    <td key={h} className="px-3 py-2">{String(r[h] ?? "")}</td>
+                                  ))}
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                        <div className="space-y-4">
+                          <div className="rounded-xl border p-3">
+                            <div className="mb-2 text-sm font-medium">Preview</div>
+                            <div className="h-40 w-full rounded-md border bg-background/50">
+                              <ChartRenderer
+                                table={state.table}
+                                chart={chart}
+                                xField={xField}
+                                yField={yField}
+                                y2Field={y2Field}
+                                colorVar={colorVar}
+                                customHex={customHex}
+                                opacity={opacity}
+                                palette={palette}
+                                perValueColors={perValueColors}
+                              />
+                            </div>
+                          </div>
+                          <div className="rounded-xl border p-3">
+                            <div className="mb-2 text-sm font-medium">Chart type</div>
+                            <div className="grid grid-cols-3 gap-2">
+                              {chartTypes.map((t) => (
+                                <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
+                                  {t.label}
+                                </Button>
+                              ))}
+                            </div>
+                            <div className="mt-3 text-sm font-medium">Bar chart appearance</div>
+                            <div className="mt-1 flex gap-2">
+                              <Button size="sm" variant="default">Grouped</Button>
+                              <Button size="sm" variant="secondary">Stacked</Button>
+                              <Button size="sm" variant="secondary">100% stacked</Button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="border-t p-3 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-4">
+                          <label className="inline-flex items-center gap-2"><input type="checkbox" className="accent-current" /> Swap rows and columns</label>
+                          <button className="text-destructive" type="button">Clear table</button>
+                        </div>
+                      </div>
+                    </DrawerContent>
+                  </Drawer>
                 </div>
               </TooltipProvider>
             </Card>
