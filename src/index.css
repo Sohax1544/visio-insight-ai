@@ -54,6 +54,9 @@ All colors MUST be HSL.
 
     --sidebar-ring: 217.2 91.2% 59.8%;
 
+    /* Extra surfaces */
+    --surface-black: 0 0% 0%;
+
     /* Neon chart palette (HSL triples) */
     --chart-neon-1: 172 100% 62%;
     --chart-neon-2: 296 100% 67%;
@@ -106,6 +109,9 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Extra surfaces */
+    --surface-black: 0 0% 0%;
   }
 }
 

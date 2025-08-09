@@ -15,7 +15,7 @@ import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/comp
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle, DrawerTrigger } from "@/components/ui/drawer";
 
-import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home, Type, ArrowUpRight, Square, Highlighter, Target, TrendingUp, Sigma } from "lucide-react";
+import { Copy, Download, Share2, Ruler, BarChart3, Palette, Boxes, Pencil, Zap, Table as TableIcon, Home, Type, ArrowUpRight, Square, Highlighter, Target, TrendingUp, Sigma, PieChart, LineChart, Grid3X3, Filter, CircleDot } from "lucide-react";
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@/components/ui/resizable";
 import { AIHelper } from "@/components/AIHelper";
 
@@ -794,7 +794,7 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                             <div className="flex items-center justify-end">
                               <Button variant="ghost" size="sm" onClick={() => setEditPreviewCollapsed(true)}>Collapse</Button>
                             </div>
-                            <div className="mb-3 h-48 w-full rounded-md border border-sidebar-border bg-sidebar">
+                            <div className="mb-3 h-56 w-full rounded-md border border-sidebar-border" style={{ backgroundColor: "hsl(var(--surface-black))" }}>
                               <ChartRenderer
                                 table={state.table}
                                 chart={chart}
@@ -810,10 +810,31 @@ const [perValueColors, setPerValueColors] = useState<Record<string, string>>({})
                             </div>
                             <div className="mb-3">
                               <div className="mb-2 text-sm font-medium">Chart type</div>
-                              <div className="grid grid-cols-3 gap-2">
+                              <div className="grid grid-cols-3 gap-3">
                                 {chartTypes.map((t) => (
-                                  <Button key={t.value} variant={chart === t.value ? 'default' : 'secondary'} size="sm" onClick={() => setChart(t.value)}>
-                                    {t.label}
+                                  <Button
+                                    key={t.value}
+                                    variant={chart === t.value ? 'default' : 'secondary'}
+                                    size="sm"
+                                    onClick={() => setChart(t.value)}
+                                    className="h-20 flex flex-col items-center justify-center gap-1"
+                                  >
+                                    {t.value === 'pie' ? (
+                                      <PieChart className="h-5 w-5" />
+                                    ) : t.value === 'line' ? (
+                                      <LineChart className="h-5 w-5" />
+                                    ) : t.value === 'heatmap' ? (
+                                      <Grid3x3 className="h-5 w-5" />
+                                    ) : t.value === 'table' ? (
+                                      <TableIcon className="h-5 w-5" />
+                                    ) : t.value === 'funnel' ? (
+                                      <Funnel className="h-5 w-5" />
+                                    ) : t.value === 'scatter' ? (
+                                      <ScatterChart className="h-5 w-5" />
+                                    ) : (
+                                      <BarChart3 className="h-5 w-5" />
+                                    )}
+                                    <span className="text-xs">{t.label}</span>
                                   </Button>
                                 ))}
                               </div>
